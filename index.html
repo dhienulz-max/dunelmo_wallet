@@ -26,21 +26,22 @@
 </head>
 <body class="text-gray-800 h-screen flex flex-col overflow-hidden">
 
-    <!-- Header -->
     <header class="bg-blue-600 text-white p-4 pt-6 shadow-md z-10 flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold">DompetKu</h1>
             <p class="text-xs text-blue-200"><i class="fas fa-check-circle text-green-300"></i> Tersimpan di HP</p>
         </div>
+        <div class="flex gap-1 text-xs">
+            <select id="global-month" onchange="updateDashboard()" class="bg-blue-700 text-white p-1 rounded font-medium outline-none"></select>
+            <select id="global-year" onchange="updateDashboard()" class="bg-blue-700 text-white p-1 rounded font-medium outline-none"></select>
+        </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-1 overflow-y-auto hide-scrollbar pb-24 relative" id="main-content">
         
-        <!-- VIEW: BERANDA -->
         <div id="view-home" class="view-section fade-in p-4 space-y-6">
             <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-5 text-white shadow-lg">
-                <p class="text-sm text-blue-100 mb-1">Saldo Uang Aktif</p>
+                <p class="text-sm text-blue-100 mb-1">Saldo Uang Aktif (Bulan Ini)</p>
                 <h2 class="text-3xl font-bold mb-4" id="total-balance">Rp 0</h2>
                 <div class="flex justify-between border-t border-blue-400 pt-3">
                     <div class="text-left">
@@ -72,17 +73,17 @@
             </div>
         </div>
 
-        <!-- VIEW: TRANSAKSI -->
         <div id="view-transactions" class="view-section hidden fade-in p-4 space-y-4">
-            <h2 class="font-bold text-xl text-gray-800 mb-4">Riwayat Transaksi</h2>
+            <h2 class="font-bold text-xl text-gray-800">Riwayat Transaksi</h2>
             <div class="space-y-3" id="all-transactions"></div>
         </div>
 
-        <!-- VIEW: ANALISA -->
         <div id="view-analysis" class="view-section hidden fade-in p-4 space-y-6">
             <h2 class="font-bold text-xl text-gray-800">Analisa Pengeluaran</h2>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                <canvas id="expenseChart" width="400" height="400"></canvas>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-center">
+                <div class="w-full max-w-[280px]">
+                    <canvas id="expenseChart" width="300" height="300"></canvas>
+                </div>
             </div>
             <div id="analysis-insights" class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                 <h4 class="text-sm font-bold text-blue-800 mb-1"><i class="fas fa-lightbulb text-yellow-500 mr-1"></i> Insight</h4>
@@ -90,24 +91,19 @@
             </div>
         </div>
 
-        <!-- VIEW: TARGET NABUNG -->
         <div id="view-goals" class="view-section hidden fade-in p-4 space-y-4">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="font-bold text-xl text-gray-800">Target Nabung</h2>
                 <button onclick="toggleGoalModal()" class="text-blue-600 bg-blue-100 px-3 py-1 rounded-full text-xs font-bold hover:bg-blue-200 transition"><i class="fas fa-plus"></i> Tambah</button>
             </div>
-            <div id="goals-list" class="space-y-4">
-                <!-- Target di-render oleh Javascript -->
-            </div>
+            <div id="goals-list" class="space-y-4"></div>
         </div>
     </main>
 
-    <!-- Floating Action Button -->
     <button onclick="toggleAddModal()" class="absolute bottom-20 right-4 bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-xl z-20 hover:bg-blue-700 transition transform active:scale-95">
         <i class="fas fa-plus"></i>
     </button>
 
-    <!-- Bottom Navigation -->
     <nav class="glass border-t border-gray-200 absolute bottom-0 w-full px-6 py-3 pb-safe z-10">
         <ul class="flex justify-between items-center">
             <li class="nav-item active flex flex-col items-center text-blue-600 cursor-pointer w-1/4" onclick="switchTab('home')">
@@ -125,7 +121,6 @@
         </ul>
     </nav>
 
-    <!-- Modal Transaksi -->
     <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex flex-col justify-end transition-opacity opacity-0">
         <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300" id="add-modal-content">
             <div class="flex justify-between items-center mb-5">
@@ -152,18 +147,14 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Sumber Dana</label>
                         <select id="tx-source" class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500">
-                            <!-- Uang Tunai -->
                             <option value="Tunai">💵 Uang Tunai</option>
-                            <!-- Bank BUMN / Swasta -->
                             <option value="BCA">🏦 Bank BCA</option>
                             <option value="Mandiri">🏦 Bank Mandiri</option>
                             <option value="BRI">🏦 Bank BRI</option>
                             <option value="BNI">🏦 Bank BNI</option>
                             <option value="BSI">🏦 Bank BSI</option>
-                            <!-- Bank Digital -->
                             <option value="Jago">🏦 Bank Jago</option>
                             <option value="SeaBank">🏦 SeaBank</option>
-                            <!-- E-Wallet & Crypto -->
                             <option value="Gopay">📱 GoPay</option>
                             <option value="OVO">📱 OVO</option>
                             <option value="Dana">📱 DANA</option>
@@ -183,7 +174,6 @@
         </div>
     </div>
 
-    <!-- Modal Target Nabung -->
     <div id="goal-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex flex-col justify-end transition-opacity opacity-0">
         <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300" id="goal-modal-content">
             <div class="flex justify-between items-center mb-5">
@@ -206,62 +196,78 @@
         </div>
     </div>
 
-    <!-- Notification Toast -->
     <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none z-50 flex items-center">
         <i class="fas fa-check-circle text-green-400 mr-2"></i><span id="toast-msg">Notifikasi</span>
     </div>
 
     <script>
-        // Load data from LocalStorage
-        let transactions = JSON.parse(localStorage.getItem('dompetku_data_v2')) || [];
-        transactions = transactions.map(tx => ({...tx, date: new Date(tx.date)}));
+        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         
-        let goals = JSON.parse(localStorage.getItem('dompetku_goals_v1')) || [
-            { id: 1, name: 'Dana Darurat', target: 10000000 }
-        ];
+        // Setup initial filter values based on current date
+        const today = new Date();
+        let currentFilteredMonth = today.getMonth();
+        let currentFilteredYear = today.getFullYear();
+
+        // Populate header dropdown filters
+        const monthSelect = document.getElementById('global-month');
+        const yearSelect = document.getElementById('global-year');
+        months.forEach((m, idx) => { monthSelect.innerHTML += `<option value="${idx}" ${idx === currentFilteredMonth ? 'selected' : ''}>${m}</option>`; });
+        for(let y = 2025; y <= 2030; y++) { yearSelect.innerHTML += `<option value="${y}" ${y === currentFilteredYear ? 'selected' : ''}>${y}</option>`; }
+
+        // Load Data
+        let transactions = JSON.parse(localStorage.getItem('dompetku_data_v3')) || [];
+        let goals = JSON.parse(localStorage.getItem('dompetku_goals_v2')) || [{ id: 1, name: 'Dana Darurat', target: 10000000 }];
 
         let currentTxType = 'expense';
         let expenseChartInstance = null;
-        let currentBalance = 0;
 
         const categoryColors = { 'Makanan': '#F59E0B', 'Transportasi': '#3B82F6', 'Belanja': '#EC4899', 'Tagihan': '#EF4444', 'Gaji': '#10B981', 'Lainnya': '#8B5CF6' };
         const categoryIcons = { 'Makanan': 'fas fa-hamburger text-yellow-500', 'Transportasi': 'fas fa-car text-blue-500', 'Belanja': 'fas fa-shopping-bag text-pink-500', 'Tagihan': 'fas fa-file-invoice-dollar text-red-500', 'Gaji': 'fas fa-wallet text-green-500', 'Lainnya': 'fas fa-star text-purple-500' };
 
         function formatRupiah(amount) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount); }
-        function formatDate(date) { return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(date); }
+        function formatDate(dateStr) { 
+            const d = new Date(dateStr);
+            return `${d.getDate()} ${months[d.getMonth()].substring(0,3)} ${d.getFullYear().toString().substring(2)}`; 
+        }
 
         function saveDataToLocal() {
-            localStorage.setItem('dompetku_data_v2', JSON.stringify(transactions));
-            localStorage.setItem('dompetku_goals_v1', JSON.stringify(goals));
+            localStorage.setItem('dompetku_data_v3', JSON.stringify(transactions));
+            localStorage.setItem('dompetku_goals_v2', JSON.stringify(goals));
         }
 
         function updateDashboard() {
+            currentFilteredMonth = parseInt(document.getElementById('global-month').value);
+            currentFilteredYear = parseInt(document.getElementById('global-year').value);
+
             let totalIncome = 0; let totalExpense = 0; let totalSaving = 0; let categoriesTotal = {};
             
+            // Filter transactions matching the selected month and year
             transactions.forEach(tx => {
-                if (tx.type === 'income') totalIncome += tx.amount;
-                else if (tx.type === 'expense') { 
-                    totalExpense += tx.amount; 
-                    categoriesTotal[tx.category] = (categoriesTotal[tx.category] || 0) + tx.amount; 
-                } else if (tx.type === 'saving') {
-                    totalSaving += tx.amount; // Uang yang disisihkan ke target nabung
+                const txDate = new Date(tx.date);
+                if (txDate.getMonth() === currentFilteredMonth && txDate.getFullYear() === currentFilteredYear) {
+                    if (tx.type === 'income') totalIncome += tx.amount;
+                    else if (tx.type === 'expense') { 
+                        totalExpense += tx.amount; 
+                        categoriesTotal[tx.category] = (categoriesTotal[tx.category] || 0) + tx.amount; 
+                    } else if (tx.type === 'saving') {
+                        totalSaving += tx.amount;
+                    }
                 }
             });
 
-            // Uang Jajan = Pemasukan - Pengeluaran - Tabungan
-            currentBalance = totalIncome - totalExpense - totalSaving; 
+            const currentBalance = totalIncome - totalExpense - totalSaving; 
 
             document.getElementById('total-balance').innerText = formatRupiah(currentBalance);
             document.getElementById('total-income').innerText = '+ ' + formatRupiah(totalIncome);
             document.getElementById('total-expense').innerText = '- ' + formatRupiah(totalExpense);
             document.getElementById('total-saved').innerText = formatRupiah(totalSaving);
 
-            // Update Kategori Pengeluaran
+            // Update Categories UI
             const quickCatsDiv = document.getElementById('quick-categories');
             quickCatsDiv.innerHTML = '';
             const sortedCats = Object.keys(categoriesTotal).sort((a, b) => categoriesTotal[b] - categoriesTotal[a]).slice(0, 3);
             
-            if (sortedCats.length === 0) quickCatsDiv.innerHTML = `<div class="col-span-3 text-center text-xs text-gray-400 py-4">Belum ada pengeluaran.</div>`;
+            if (sortedCats.length === 0) quickCatsDiv.innerHTML = `<div class="col-span-3 text-center text-xs text-gray-400 py-4">Tidak ada pengeluaran di periode ini.</div>`;
             else sortedCats.forEach(cat => {
                 quickCatsDiv.innerHTML += `
                     <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
@@ -272,65 +278,61 @@
             });
 
             renderTransactionLists(); 
-            updateAnalysis();
+            updateAnalysisChart(categoriesTotal);
             renderGoals();
         }
 
         function renderGoals() {
-            const list = document.getElementById('goals-list');
+            const list = document.getElementById('view-goals').querySelector('#goals-list');
             list.innerHTML = '';
             
             let goalSaved = {};
-            // Hitung total uang yang masuk ke masing-masing target
-            transactions.forEach(tx => {
-                if (tx.type === 'saving') goalSaved[tx.category] = (goalSaved[tx.category] || 0) + tx.amount;
-            });
+            // Tabungan dihitung akumulatif (semua periode waktu)
+            transactions.forEach(tx => { if (tx.type === 'saving') goalSaved[tx.category] = (goalSaved[tx.category] || 0) + tx.amount; });
 
             if(goals.length === 0) {
-                list.innerHTML = '<p class="text-center text-gray-400 text-sm py-8 border-2 border-dashed border-gray-200 rounded-xl">Belum ada target nabung. Klik "Tambah" untuk membuat target.</p>';
+                list.innerHTML = '<p class="text-center text-gray-400 text-sm py-8 border-2 border-dashed border-gray-200 rounded-xl">Belum ada target nabung.</p>';
                 return;
             }
 
             goals.forEach(goal => {
                 let savedAmount = goalSaved[goal.id.toString()] || 0;
                 let percent = (savedAmount / goal.target) * 100;
-                if(percent < 0) percent = 0; if(percent > 100) percent = 100;
+                if(percent > 100) percent = 100;
                 let colorClass = savedAmount >= goal.target ? 'green' : 'blue';
 
                 list.innerHTML += `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
                     <button onclick="deleteGoal(${goal.id})" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
                     <div class="flex justify-between items-start mb-2">
-                        <div class="pr-6">
-                            <h3 class="font-bold text-gray-800">${goal.name}</h3>
-                            <p class="text-xs text-gray-500">Target: ${formatRupiah(goal.target)}</p>
-                        </div>
+                        <div class="pr-6"><h3 class="font-bold text-gray-800">${goal.name}</h3><p class="text-xs text-gray-500">Target: ${formatRupiah(goal.target)}</p></div>
                     </div>
                     <div class="mt-4">
                         <div class="flex justify-between text-xs mb-1">
                             <span class="font-semibold text-${colorClass}-500">${formatRupiah(savedAmount)}</span>
                             <span class="text-gray-500">${percent.toFixed(1)}%</span>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-${colorClass}-500 h-2.5 rounded-full" style="width: ${percent}%"></div>
-                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-${colorClass}-500 h-2.5 rounded-full" style="width: ${percent}%"></div></div>
                     </div>
                 </div>`;
             });
         }
 
         function renderTransactionLists() {
-            const sorted = [...transactions].sort((a, b) => b.date - a.date);
+            // Urutkan riwayat transaksi bulanan saat ini
+            const filteredTx = transactions.filter(tx => {
+                const d = new Date(tx.date);
+                return d.getMonth() === currentFilteredMonth && d.getFullYear() === currentFilteredYear;
+            }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
             const recentDiv = document.getElementById('recent-transactions');
             const allDiv = document.getElementById('all-transactions');
             
-            recentDiv.innerHTML = sorted.length === 0 ? '<p class="text-center text-gray-400 text-sm py-4">Belum ada transaksi.</p>' : '';
-            allDiv.innerHTML = '';
+            recentDiv.innerHTML = filteredTx.length === 0 ? '<p class="text-center text-gray-400 text-sm py-4">Belum ada transaksi.</p>' : '';
+            allDiv.innerHTML = filteredTx.length === 0 ? '<p class="text-center text-gray-400 text-sm py-4">Belum ada transaksi di bulan ini.</p>' : '';
 
             const createEl = (tx) => {
-                const isInc = tx.type === 'income';
-                const isSav = tx.type === 'saving';
-                
+                const isInc = tx.type === 'income'; const isSav = tx.type === 'saving';
                 let sign = isInc ? '+' : '-';
                 let color = isInc ? 'text-green-500' : (isSav ? 'text-blue-500' : 'text-gray-800');
                 let bgIcon = isInc ? 'bg-green-100' : (isSav ? 'bg-blue-100' : 'bg-gray-100');
@@ -339,51 +341,57 @@
                 let displayCategory = tx.category;
                 if (isSav) {
                     const goal = goals.find(g => g.id.toString() === tx.category.toString());
-                    displayCategory = goal ? `Nabung: ${goal.name}` : 'Tabungan Dihapus';
+                    displayCategory = goal ? `Nabung: ${goal.name}` : 'Target Terhapus';
                 }
 
                 const el = document.createElement('div');
                 el.className = 'bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center';
                 el.innerHTML = `
-                    <div class="flex items-center overflow-hidden">
-                        <div class="w-10 h-10 rounded-full ${bgIcon} flex items-center justify-center mr-3 shrink-0">
-                            <i class="${icon}"></i>
-                        </div>
+                    <div class="flex items-center overflow-hidden flex-1 mr-2">
+                        <div class="w-10 h-10 rounded-full ${bgIcon} flex items-center justify-center mr-3 shrink-0"><i class="${icon}"></i></div>
                         <div class="truncate">
                             <h4 class="text-sm font-bold text-gray-800 truncate">${displayCategory}</h4>
                             <p class="text-[10px] text-gray-400 truncate">${tx.note || tx.source} • ${formatDate(tx.date)}</p>
                         </div>
                     </div>
-                    <div class="text-right shrink-0 ml-2">
-                        <span class="text-sm font-bold ${color}">${sign} ${formatRupiah(tx.amount)}</span>
-                        <p class="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded inline-block mt-1">${tx.source}</p>
+                    <div class="flex items-center shrink-0 gap-3">
+                        <div class="text-right">
+                            <span class="text-sm font-bold ${color}">${sign} ${formatRupiah(tx.amount)}</span>
+                            <br><p class="text-[9px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded inline-block mt-0.5">${tx.source}</p>
+                        </div>
+                        <button onclick="deleteTransaction(${tx.id})" class="text-gray-300 hover:text-red-500 p-1 transition text-sm"><i class="fas fa-trash-alt"></i></button>
                     </div>`;
                 return el;
             };
 
-            sorted.slice(0, 5).forEach(tx => recentDiv.appendChild(createEl(tx)));
-            sorted.forEach(tx => allDiv.appendChild(createEl(tx)));
+            filteredTx.slice(0, 5).forEach(tx => recentDiv.appendChild(createEl(tx)));
+            filteredTx.forEach(tx => allDiv.appendChild(createEl(tx)));
         }
 
-        function updateAnalysis() {
-            let catTotal = {};
-            transactions.forEach(tx => { if (tx.type === 'expense') catTotal[tx.category] = (catTotal[tx.category] || 0) + tx.amount; });
+        function updateAnalysisChart(catTotal) {
             const labels = Object.keys(catTotal); const data = Object.values(catTotal);
-            
             const insightEl = document.getElementById('insight-text');
-            if (data.length > 0) insightEl.innerHTML = `Pengeluaran terbesar Anda adalah <b>${labels[data.indexOf(Math.max(...data))]}</b>.`;
-            else insightEl.innerHTML = `Belum ada data pengeluaran.`;
+            if (data.length > 0) insightEl.innerHTML = `Pengeluaran terbesar di periode ini adalah <b>${labels[data.indexOf(Math.max(...data))]}</b>.`;
+            else insightEl.innerHTML = `Belum ada data pengeluaran untuk dianalisa pada bulan ini.`;
 
+            const ctx = document.getElementById('expenseChart').getContext('2d');
             if (expenseChartInstance) {
                 expenseChartInstance.data.labels = labels; expenseChartInstance.data.datasets[0].data = data;
                 expenseChartInstance.data.datasets[0].backgroundColor = labels.map(l => categoryColors[l] || '#cbd5e1');
                 expenseChartInstance.update();
             } else {
-                expenseChartInstance = new Chart(document.getElementById('expenseChart').getContext('2d'), {
+                expenseChartInstance = new Chart(ctx, {
                     type: 'doughnut',
                     data: { labels: labels, datasets: [{ data: data, backgroundColor: labels.map(l => categoryColors[l] || '#cbd5e1'), borderWidth: 0 }] },
-                    options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { size: 11, family: 'Inter' } } } } }
+                    options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, font: { size: 11 } } } } }
                 });
+            }
+        }
+
+        function deleteTransaction(id) {
+            if(confirm("Hapus transaksi ini secara permanen?")) {
+                transactions = transactions.filter(tx => tx.id !== id);
+                saveDataToLocal(); updateDashboard(); showToast('Transaksi berhasil dihapus!');
             }
         }
 
@@ -392,59 +400,37 @@
             document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('text-blue-600'); el.classList.add('text-gray-400'); });
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
             const idx = { 'home': 0, 'transactions': 1, 'analysis': 2, 'goals': 3 }[tabId];
-            const navs = document.querySelectorAll('.nav-item');
-            navs[idx].classList.remove('text-gray-400'); navs[idx].classList.add('text-blue-600');
+            document.querySelectorAll('.nav-item')[idx].className = "nav-item flex flex-col items-center text-blue-600 cursor-pointer w-1/4";
             document.getElementById('main-content').scrollTop = 0;
         }
 
         function toggleAddModal() {
-            const modal = document.getElementById('add-modal'); const content = document.getElementById('add-modal-content');
-            if (modal.classList.contains('hidden')) {
-                modal.classList.remove('hidden'); void modal.offsetWidth;
-                modal.classList.remove('opacity-0'); content.classList.remove('translate-y-full');
-            } else {
-                modal.classList.add('opacity-0'); content.classList.add('translate-y-full');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            }
+            const m = document.getElementById('add-modal'); const c = document.getElementById('add-modal-content');
+            if (m.classList.contains('hidden')) { m.classList.remove('hidden'); void m.offsetWidth; m.classList.remove('opacity-0'); c.classList.remove('translate-y-full'); }
+            else { m.classList.add('opacity-0'); c.classList.add('translate-y-full'); setTimeout(() => m.classList.add('hidden'), 300); }
         }
 
         function toggleGoalModal() {
-            const modal = document.getElementById('goal-modal'); const content = document.getElementById('goal-modal-content');
-            if (modal.classList.contains('hidden')) {
-                modal.classList.remove('hidden'); void modal.offsetWidth;
-                modal.classList.remove('opacity-0'); content.classList.remove('translate-y-full');
-            } else {
-                modal.classList.add('opacity-0'); content.classList.add('translate-y-full');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            }
+            const m = document.getElementById('goal-modal'); const c = document.getElementById('goal-modal-content');
+            if (m.classList.contains('hidden')) { m.classList.remove('hidden'); void m.offsetWidth; m.classList.remove('opacity-0'); c.classList.remove('translate-y-full'); }
+            else { m.classList.add('opacity-0'); c.classList.add('translate-y-full'); setTimeout(() => m.classList.add('hidden'), 300); }
         }
 
         function setTxType(type) {
             currentTxType = type;
-            const bE = document.getElementById('btn-type-expense'); 
-            const bI = document.getElementById('btn-type-income');
-            const bS = document.getElementById('btn-type-saving');
-            const catLabel = document.getElementById('label-category');
-            const cat = document.getElementById('tx-category');
-            
-            bE.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500";
-            bI.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500";
-            bS.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500";
+            const bE = document.getElementById('btn-type-expense'); const bI = document.getElementById('btn-type-income'); const bS = document.getElementById('btn-type-saving');
+            const catLabel = document.getElementById('label-category'); const cat = document.getElementById('tx-category');
+            bE.className = bI.className = bS.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500";
 
             if (type === 'expense') {
-                bE.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-red-500";
-                catLabel.innerText = "Kategori";
+                bE.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-red-500"; catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Makanan">🍔 Makanan</option><option value="Transportasi">🚗 Transportasi</option><option value="Belanja">🛍️ Belanja</option><option value="Tagihan">📄 Tagihan</option><option value="Lainnya">✨ Lainnya</option>`;
             } else if (type === 'income') {
-                bI.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-green-500";
-                catLabel.innerText = "Kategori";
+                bI.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-green-500"; catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Gaji">💼 Gaji</option><option value="Bonus">🎁 Bonus</option><option value="Investasi">📈 Investasi</option><option value="Lainnya">✨ Lainnya</option>`;
             } else if (type === 'saving') {
-                bS.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-blue-500";
-                catLabel.innerText = "Pilih Target Nabung";
-                cat.innerHTML = goals.length > 0 
-                    ? goals.map(g => `<option value="${g.id}">🎯 ${g.name}</option>`).join('')
-                    : `<option value="">⚠️ Buat Target Dulu di Menu Target!</option>`;
+                bS.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-blue-500"; catLabel.innerText = "Pilih Target Nabung";
+                cat.innerHTML = goals.length > 0 ? goals.map(g => `<option value="${g.id}">🎯 ${g.name}</option>`).join('') : `<option value="">⚠️ Buat Target Terlebih Dahulu!</option>`;
             }
         }
 
@@ -452,40 +438,28 @@
             e.preventDefault();
             const amount = parseInt(document.getElementById('tx-amount').value);
             const category = document.getElementById('tx-category').value;
-            
-            if(!amount || amount <= 0) return;
-            if(currentTxType === 'saving' && !category) {
-                showToast('Gagal! Buat Target Nabung dulu.');
-                return;
-            }
+            if(!amount || amount <= 0 || (currentTxType === 'saving' && !category)) return;
             
             transactions.push({ 
-                id: Date.now(), type: currentTxType, amount: amount, 
-                category: category, 
-                source: document.getElementById('tx-source').value, 
-                note: document.getElementById('tx-note').value, date: new Date() 
+                id: Date.now(), type: currentTxType, amount: amount, category: category, 
+                source: document.getElementById('tx-source').value, note: document.getElementById('tx-note').value, 
+                date: new Date().toISOString() // Simpan waktu rill saat diklik
             });
             
-            saveDataToLocal(); updateDashboard(); document.getElementById('tx-form').reset(); 
-            toggleAddModal(); showToast('Tersimpan di HP!');
+            saveDataToLocal(); updateDashboard(); document.getElementById('tx-form').reset(); toggleAddModal(); showToast('Tersimpan di HP!');
         }
 
         function handleGoalSubmit(e) {
             e.preventDefault();
-            const name = document.getElementById('goal-name').value;
-            const amount = parseInt(document.getElementById('goal-amount').value);
+            const name = document.getElementById('goal-name').value; const amount = parseInt(document.getElementById('goal-amount').value);
             if(!amount || amount <= 0 || !name) return;
-
             goals.push({ id: Date.now(), name: name, target: amount });
-            
-            saveDataToLocal(); updateDashboard(); document.getElementById('goal-form').reset();
-            toggleGoalModal(); showToast('Target baru ditambahkan!');
+            saveDataToLocal(); updateDashboard(); document.getElementById('goal-form').reset(); toggleGoalModal(); showToast('Target baru ditambahkan!');
         }
 
         function deleteGoal(id) {
-            if(confirm("Apakah Anda yakin ingin menghapus target ini? Data tabungan terkait juga akan terhapus.")) {
+            if(confirm("Hapus target ini? Riwayat tabungan terkait target ini juga akan ikut terhapus.")) {
                 goals = goals.filter(g => g.id !== id);
-                // Hapus juga transaksi tabungan yang nyambung ke target ini
                 transactions = transactions.filter(tx => !(tx.type === 'saving' && tx.category == id));
                 saveDataToLocal(); updateDashboard(); showToast('Target dihapus!');
             }
