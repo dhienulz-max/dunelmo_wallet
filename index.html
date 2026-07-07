@@ -26,6 +26,7 @@
 </head>
 <body class="text-gray-800 h-screen flex flex-col overflow-hidden">
 
+    <!-- Header -->
     <header class="bg-blue-600 text-white p-4 pt-6 shadow-md z-10 flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold">DompetKu</h1>
@@ -33,20 +34,26 @@
         </div>
     </header>
 
+    <!-- Main Content Area -->
     <main class="flex-1 overflow-y-auto hide-scrollbar pb-24 relative" id="main-content">
         
+        <!-- VIEW: BERANDA -->
         <div id="view-home" class="view-section fade-in p-4 space-y-6">
             <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-5 text-white shadow-lg">
-                <p class="text-sm text-blue-100 mb-1">Total Saldo Saat Ini</p>
+                <p class="text-sm text-blue-100 mb-1">Saldo Uang Aktif</p>
                 <h2 class="text-3xl font-bold mb-4" id="total-balance">Rp 0</h2>
                 <div class="flex justify-between border-t border-blue-400 pt-3">
-                    <div>
-                        <p class="text-xs text-blue-200">Pemasukan</p>
-                        <p class="text-sm font-semibold" id="total-income">+ Rp 0</p>
+                    <div class="text-left">
+                        <p class="text-[10px] text-blue-200">Masuk</p>
+                        <p class="text-xs font-semibold" id="total-income">+ Rp 0</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-[10px] text-blue-200">Ditabung</p>
+                        <p class="text-xs font-semibold text-blue-100" id="total-saved">Rp 0</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-xs text-blue-200">Pengeluaran</p>
-                        <p class="text-sm font-semibold" id="total-expense">- Rp 0</p>
+                        <p class="text-[10px] text-blue-200">Keluar</p>
+                        <p class="text-xs font-semibold text-red-200" id="total-expense">- Rp 0</p>
                     </div>
                 </div>
             </div>
@@ -65,11 +72,13 @@
             </div>
         </div>
 
+        <!-- VIEW: TRANSAKSI -->
         <div id="view-transactions" class="view-section hidden fade-in p-4 space-y-4">
             <h2 class="font-bold text-xl text-gray-800 mb-4">Riwayat Transaksi</h2>
             <div class="space-y-3" id="all-transactions"></div>
         </div>
 
+        <!-- VIEW: ANALISA -->
         <div id="view-analysis" class="view-section hidden fade-in p-4 space-y-6">
             <h2 class="font-bold text-xl text-gray-800">Analisa Pengeluaran</h2>
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
@@ -81,20 +90,24 @@
             </div>
         </div>
 
+        <!-- VIEW: TARGET NABUNG -->
         <div id="view-goals" class="view-section hidden fade-in p-4 space-y-4">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="font-bold text-xl text-gray-800">Target Nabung</h2>
                 <button onclick="toggleGoalModal()" class="text-blue-600 bg-blue-100 px-3 py-1 rounded-full text-xs font-bold hover:bg-blue-200 transition"><i class="fas fa-plus"></i> Tambah</button>
             </div>
             <div id="goals-list" class="space-y-4">
-                </div>
+                <!-- Target di-render oleh Javascript -->
+            </div>
         </div>
     </main>
 
+    <!-- Floating Action Button -->
     <button onclick="toggleAddModal()" class="absolute bottom-20 right-4 bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-xl z-20 hover:bg-blue-700 transition transform active:scale-95">
         <i class="fas fa-plus"></i>
     </button>
 
+    <!-- Bottom Navigation -->
     <nav class="glass border-t border-gray-200 absolute bottom-0 w-full px-6 py-3 pb-safe z-10">
         <ul class="flex justify-between items-center">
             <li class="nav-item active flex flex-col items-center text-blue-600 cursor-pointer w-1/4" onclick="switchTab('home')">
@@ -112,6 +125,7 @@
         </ul>
     </nav>
 
+    <!-- Modal Transaksi -->
     <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex flex-col justify-end transition-opacity opacity-0">
         <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300" id="add-modal-content">
             <div class="flex justify-between items-center mb-5">
@@ -122,6 +136,7 @@
             <div class="flex bg-gray-100 rounded-lg p-1 mb-5">
                 <button id="btn-type-expense" onclick="setTxType('expense')" class="flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-red-500">Pengeluaran</button>
                 <button id="btn-type-income" onclick="setTxType('income')" class="flex-1 py-2 text-sm font-medium rounded-md text-gray-500">Pemasukan</button>
+                <button id="btn-type-saving" onclick="setTxType('saving')" class="flex-1 py-2 text-sm font-medium rounded-md text-gray-500">Nabung</button>
             </div>
 
             <form id="tx-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
@@ -131,16 +146,29 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
+                        <label id="label-category" class="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
                         <select id="tx-category" required class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"></select>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Sumber Dana</label>
                         <select id="tx-source" class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500">
+                            <!-- Uang Tunai -->
                             <option value="Tunai">💵 Uang Tunai</option>
+                            <!-- Bank BUMN / Swasta -->
                             <option value="BCA">🏦 Bank BCA</option>
                             <option value="Mandiri">🏦 Bank Mandiri</option>
-                            <option value="Gopay">📱 E-Wallet</option>
+                            <option value="BRI">🏦 Bank BRI</option>
+                            <option value="BNI">🏦 Bank BNI</option>
+                            <option value="BSI">🏦 Bank BSI</option>
+                            <!-- Bank Digital -->
+                            <option value="Jago">🏦 Bank Jago</option>
+                            <option value="SeaBank">🏦 SeaBank</option>
+                            <!-- E-Wallet & Crypto -->
+                            <option value="Gopay">📱 GoPay</option>
+                            <option value="OVO">📱 OVO</option>
+                            <option value="Dana">📱 DANA</option>
+                            <option value="ShopeePay">📱 ShopeePay</option>
+                            <option value="Crypto">🪙 Aset Kripto</option>
                         </select>
                     </div>
                 </div>
@@ -155,6 +183,7 @@
         </div>
     </div>
 
+    <!-- Modal Target Nabung -->
     <div id="goal-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex flex-col justify-end transition-opacity opacity-0">
         <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300" id="goal-modal-content">
             <div class="flex justify-between items-center mb-5">
@@ -177,6 +206,7 @@
         </div>
     </div>
 
+    <!-- Notification Toast -->
     <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none z-50 flex items-center">
         <i class="fas fa-check-circle text-green-400 mr-2"></i><span id="toast-msg">Notifikasi</span>
     </div>
@@ -206,22 +236,27 @@
         }
 
         function updateDashboard() {
-            let totalIncome = 0; let totalExpense = 0; let categoriesTotal = {};
+            let totalIncome = 0; let totalExpense = 0; let totalSaving = 0; let categoriesTotal = {};
             
             transactions.forEach(tx => {
                 if (tx.type === 'income') totalIncome += tx.amount;
-                else { 
+                else if (tx.type === 'expense') { 
                     totalExpense += tx.amount; 
                     categoriesTotal[tx.category] = (categoriesTotal[tx.category] || 0) + tx.amount; 
+                } else if (tx.type === 'saving') {
+                    totalSaving += tx.amount; // Uang yang disisihkan ke target nabung
                 }
             });
 
-            currentBalance = totalIncome - totalExpense;
+            // Uang Jajan = Pemasukan - Pengeluaran - Tabungan
+            currentBalance = totalIncome - totalExpense - totalSaving; 
+
             document.getElementById('total-balance').innerText = formatRupiah(currentBalance);
             document.getElementById('total-income').innerText = '+ ' + formatRupiah(totalIncome);
             document.getElementById('total-expense').innerText = '- ' + formatRupiah(totalExpense);
+            document.getElementById('total-saved').innerText = formatRupiah(totalSaving);
 
-            // Update Categories
+            // Update Kategori Pengeluaran
             const quickCatsDiv = document.getElementById('quick-categories');
             quickCatsDiv.innerHTML = '';
             const sortedCats = Object.keys(categoriesTotal).sort((a, b) => categoriesTotal[b] - categoriesTotal[a]).slice(0, 3);
@@ -245,15 +280,22 @@
             const list = document.getElementById('goals-list');
             list.innerHTML = '';
             
+            let goalSaved = {};
+            // Hitung total uang yang masuk ke masing-masing target
+            transactions.forEach(tx => {
+                if (tx.type === 'saving') goalSaved[tx.category] = (goalSaved[tx.category] || 0) + tx.amount;
+            });
+
             if(goals.length === 0) {
                 list.innerHTML = '<p class="text-center text-gray-400 text-sm py-8 border-2 border-dashed border-gray-200 rounded-xl">Belum ada target nabung. Klik "Tambah" untuk membuat target.</p>';
                 return;
             }
 
             goals.forEach(goal => {
-                let percent = (currentBalance / goal.target) * 100;
+                let savedAmount = goalSaved[goal.id.toString()] || 0;
+                let percent = (savedAmount / goal.target) * 100;
                 if(percent < 0) percent = 0; if(percent > 100) percent = 100;
-                let colorClass = currentBalance >= goal.target ? 'green' : 'blue';
+                let colorClass = savedAmount >= goal.target ? 'green' : 'blue';
 
                 list.innerHTML += `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
@@ -266,7 +308,7 @@
                     </div>
                     <div class="mt-4">
                         <div class="flex justify-between text-xs mb-1">
-                            <span class="font-semibold text-${colorClass}-500">${formatRupiah(currentBalance)}</span>
+                            <span class="font-semibold text-${colorClass}-500">${formatRupiah(savedAmount)}</span>
                             <span class="text-gray-500">${percent.toFixed(1)}%</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
@@ -287,20 +329,33 @@
 
             const createEl = (tx) => {
                 const isInc = tx.type === 'income';
+                const isSav = tx.type === 'saving';
+                
+                let sign = isInc ? '+' : '-';
+                let color = isInc ? 'text-green-500' : (isSav ? 'text-blue-500' : 'text-gray-800');
+                let bgIcon = isInc ? 'bg-green-100' : (isSav ? 'bg-blue-100' : 'bg-gray-100');
+                let icon = isInc ? 'fas fa-arrow-down text-green-500' : (isSav ? 'fas fa-piggy-bank text-blue-500' : (categoryIcons[tx.category] || 'fas fa-receipt text-gray-500'));
+
+                let displayCategory = tx.category;
+                if (isSav) {
+                    const goal = goals.find(g => g.id.toString() === tx.category.toString());
+                    displayCategory = goal ? `Nabung: ${goal.name}` : 'Tabungan Dihapus';
+                }
+
                 const el = document.createElement('div');
                 el.className = 'bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center';
                 el.innerHTML = `
                     <div class="flex items-center overflow-hidden">
-                        <div class="w-10 h-10 rounded-full ${isInc ? 'bg-green-100' : 'bg-gray-100'} flex items-center justify-center mr-3 shrink-0">
-                            <i class="${isInc ? 'fas fa-arrow-down text-green-500' : categoryIcons[tx.category] || 'fas fa-receipt text-gray-500'}"></i>
+                        <div class="w-10 h-10 rounded-full ${bgIcon} flex items-center justify-center mr-3 shrink-0">
+                            <i class="${icon}"></i>
                         </div>
                         <div class="truncate">
-                            <h4 class="text-sm font-bold text-gray-800 truncate">${tx.category}</h4>
+                            <h4 class="text-sm font-bold text-gray-800 truncate">${displayCategory}</h4>
                             <p class="text-[10px] text-gray-400 truncate">${tx.note || tx.source} • ${formatDate(tx.date)}</p>
                         </div>
                     </div>
                     <div class="text-right shrink-0 ml-2">
-                        <span class="text-sm font-bold ${isInc ? 'text-green-500' : 'text-gray-800'}">${isInc ? '+' : '-'} ${formatRupiah(tx.amount)}</span>
+                        <span class="text-sm font-bold ${color}">${sign} ${formatRupiah(tx.amount)}</span>
                         <p class="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded inline-block mt-1">${tx.source}</p>
                     </div>`;
                 return el;
@@ -366,25 +421,47 @@
 
         function setTxType(type) {
             currentTxType = type;
-            const bE = document.getElementById('btn-type-expense'); const bI = document.getElementById('btn-type-income');
+            const bE = document.getElementById('btn-type-expense'); 
+            const bI = document.getElementById('btn-type-income');
+            const bS = document.getElementById('btn-type-saving');
+            const catLabel = document.getElementById('label-category');
             const cat = document.getElementById('tx-category');
+            
+            bE.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500";
+            bI.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500";
+            bS.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500";
+
             if (type === 'expense') {
-                bE.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-red-500"; bI.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500";
+                bE.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-red-500";
+                catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Makanan">🍔 Makanan</option><option value="Transportasi">🚗 Transportasi</option><option value="Belanja">🛍️ Belanja</option><option value="Tagihan">📄 Tagihan</option><option value="Lainnya">✨ Lainnya</option>`;
-            } else {
-                bI.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-green-500"; bE.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500";
+            } else if (type === 'income') {
+                bI.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-green-500";
+                catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Gaji">💼 Gaji</option><option value="Bonus">🎁 Bonus</option><option value="Investasi">📈 Investasi</option><option value="Lainnya">✨ Lainnya</option>`;
+            } else if (type === 'saving') {
+                bS.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-blue-500";
+                catLabel.innerText = "Pilih Target Nabung";
+                cat.innerHTML = goals.length > 0 
+                    ? goals.map(g => `<option value="${g.id}">🎯 ${g.name}</option>`).join('')
+                    : `<option value="">⚠️ Buat Target Dulu di Menu Target!</option>`;
             }
         }
 
         function handleFormSubmit(e) {
             e.preventDefault();
             const amount = parseInt(document.getElementById('tx-amount').value);
+            const category = document.getElementById('tx-category').value;
+            
             if(!amount || amount <= 0) return;
+            if(currentTxType === 'saving' && !category) {
+                showToast('Gagal! Buat Target Nabung dulu.');
+                return;
+            }
             
             transactions.push({ 
                 id: Date.now(), type: currentTxType, amount: amount, 
-                category: document.getElementById('tx-category').value, 
+                category: category, 
                 source: document.getElementById('tx-source').value, 
                 note: document.getElementById('tx-note').value, date: new Date() 
             });
@@ -406,8 +483,10 @@
         }
 
         function deleteGoal(id) {
-            if(confirm("Apakah Anda yakin ingin menghapus target ini?")) {
+            if(confirm("Apakah Anda yakin ingin menghapus target ini? Data tabungan terkait juga akan terhapus.")) {
                 goals = goals.filter(g => g.id !== id);
+                // Hapus juga transaksi tabungan yang nyambung ke target ini
+                transactions = transactions.filter(tx => !(tx.type === 'saving' && tx.category == id));
                 saveDataToLocal(); updateDashboard(); showToast('Target dihapus!');
             }
         }
