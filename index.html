@@ -1,549 +1,92 @@
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#2563EB">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="DompetKu">
-    
-    <title>DompetKu - Keuangan Pribadi (Cloud)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DompetKu - Hemat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; overscroll-behavior-y: none; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); }
-        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
-        
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* Loading Spinner */
-        .loader { border-top-color: #3B82F6; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
 </head>
-<body class="text-gray-800 h-screen flex flex-col overflow-hidden">
+<body class="bg-gray-100 h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="bg-blue-600 text-white p-4 pt-6 shadow-md z-10 flex justify-between items-center">
-        <div>
-            <h1 class="text-xl font-bold">DompetKu</h1>
-            <p class="text-xs text-blue-200 flex items-center gap-1" id="cloud-status">
-                <i class="fas fa-spinner fa-spin"></i> Menyambungkan ke Cloud...
-            </p>
-        </div>
-        <button onclick="simulateBankSync()" class="bg-blue-500 hover:bg-blue-400 p-2 rounded-full text-sm flex items-center transition">
-            <i class="fas fa-sync-alt mr-2"></i> Sinkron
-        </button>
+    <header class="bg-blue-600 text-white p-4 pt-6 shadow-md">
+        <h1 class="text-xl font-bold">DompetKu</h1>
+        <p class="text-xs text-blue-200">Data tersimpan di HP Anda</p>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto hide-scrollbar pb-24 relative" id="main-content">
-        
-        <!-- VIEW: BERANDA -->
-        <div id="view-home" class="view-section fade-in p-4 space-y-6">
-            <!-- Balance Card -->
-            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-                <p class="text-sm text-blue-100 mb-1">Total Saldo Aktual</p>
-                <h2 class="text-3xl font-bold mb-4" id="total-balance">Rp 0</h2>
-                <div class="flex justify-between border-t border-blue-400 pt-3">
-                    <div>
-                        <p class="text-xs text-blue-200">Pemasukan</p>
-                        <p class="text-sm font-semibold" id="total-income">+ Rp 0</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs text-blue-200">Pengeluaran</p>
-                        <p class="text-sm font-semibold" id="total-expense">- Rp 0</p>
-                    </div>
-                </div>
-                <i class="fas fa-wallet absolute -bottom-4 -right-2 text-6xl text-white opacity-10"></i>
-            </div>
-
-            <!-- Quick Stats -->
-            <div>
-                <h3 class="font-bold text-gray-700 mb-3 flex items-center"><i class="fas fa-chart-pie text-blue-500 mr-2"></i> Ringkasan Kategori</h3>
-                <div class="grid grid-cols-3 gap-3" id="quick-categories">
-                    <!-- Populated by JS -->
-                    <div class="col-span-3 text-center text-xs text-gray-400 py-4" id="cat-loading">Memuat data aktual...</div>
-                </div>
-            </div>
-
-            <!-- Recent Transactions -->
-            <div>
-                <div class="flex justify-between items-end mb-3">
-                    <h3 class="font-bold text-gray-700 flex items-center"><i class="fas fa-history text-blue-500 mr-2"></i> Transaksi Terakhir</h3>
-                    <button onclick="switchTab('transactions')" class="text-xs text-blue-500 font-medium">Lihat Semua</button>
-                </div>
-                <div class="space-y-3" id="recent-transactions">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
+    <main class="flex-1 overflow-y-auto p-4 pb-24">
+        <!-- Saldo -->
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-5 text-white shadow-lg mb-6">
+            <p class="text-sm">Total Saldo</p>
+            <h2 class="text-3xl font-bold" id="total-balance">Rp 0</h2>
         </div>
 
-        <!-- VIEW: TRANSAKSI -->
-        <div id="view-transactions" class="view-section hidden fade-in p-4 space-y-4">
-            <h2 class="font-bold text-xl text-gray-800 mb-4">Semua Data Transaksi</h2>
-            <div class="space-y-3" id="all-transactions">
-                <!-- Populated by JS -->
-            </div>
+        <!-- Daftar Transaksi -->
+        <div id="transaction-list" class="space-y-3">
+            <!-- Data muncul di sini -->
         </div>
-
-        <!-- VIEW: ANALISA -->
-        <div id="view-analysis" class="view-section hidden fade-in p-4 space-y-6">
-            <h2 class="font-bold text-xl text-gray-800">Analisa Pengeluaran</h2>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative">
-                <canvas id="expenseChart" width="400" height="400"></canvas>
-            </div>
-            <div id="analysis-insights" class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                <h4 class="text-sm font-bold text-blue-800 mb-1"><i class="fas fa-lightbulb text-yellow-500 mr-1"></i> Insight Cerdas</h4>
-                <p class="text-xs text-blue-600" id="insight-text">Catat pengeluaran aktual Anda untuk melihat analisa keuangan di sini.</p>
-            </div>
-        </div>
-
-        <!-- VIEW: TARGET NABUNG -->
-        <div id="view-goals" class="view-section hidden fade-in p-4 space-y-4">
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="font-bold text-xl text-gray-800">Target Nabung</h2>
-                <button class="text-blue-500 text-sm font-medium"><i class="fas fa-plus"></i> Target</button>
-            </div>
-            
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
-                <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <h3 class="font-bold text-gray-800">Dana Darurat</h3>
-                        <p class="text-xs text-gray-500">Target: Rp 10.000.000</p>
-                    </div>
-                    <i class="fas fa-shield-alt text-gray-300 text-2xl"></i>
-                </div>
-                <div class="mt-4">
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="font-semibold text-green-500">Saldo saat ini akan dihitung...</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div class="bg-green-500 h-2.5 rounded-full" id="goal-progress" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </main>
 
-    <!-- Floating Action Button -->
-    <button onclick="toggleAddModal()" class="absolute bottom-20 right-4 bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-xl z-20 hover:bg-blue-700 transition transform active:scale-95">
-        <i class="fas fa-plus"></i>
-    </button>
+    <!-- Tombol Tambah -->
+    <button onclick="toggleModal()" class="fixed bottom-6 right-6 bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg text-xl z-20">+</button>
 
-    <!-- Bottom Navigation -->
-    <nav class="glass border-t border-gray-200 absolute bottom-0 w-full px-6 py-3 pb-safe z-10">
-        <ul class="flex justify-between items-center">
-            <li class="nav-item active flex flex-col items-center text-blue-600 cursor-pointer w-1/4" onclick="switchTab('home')">
-                <i class="fas fa-home text-xl mb-1"></i>
-                <span class="text-[10px] font-medium">Beranda</span>
-            </li>
-            <li class="nav-item flex flex-col items-center text-gray-400 cursor-pointer w-1/4" onclick="switchTab('transactions')">
-                <i class="fas fa-list-alt text-xl mb-1"></i>
-                <span class="text-[10px] font-medium">Riwayat</span>
-            </li>
-            <li class="nav-item flex flex-col items-center text-gray-400 cursor-pointer w-1/4" onclick="switchTab('analysis')">
-                <i class="fas fa-chart-line text-xl mb-1"></i>
-                <span class="text-[10px] font-medium">Analisa</span>
-            </li>
-            <li class="nav-item flex flex-col items-center text-gray-400 cursor-pointer w-1/4" onclick="switchTab('goals')">
-                <i class="fas fa-bullseye text-xl mb-1"></i>
-                <span class="text-[10px] font-medium">Target</span>
-            </li>
-        </ul>
-    </nav>
-
-    <!-- Add Transaction Modal -->
-    <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex flex-col justify-end transition-opacity opacity-0">
-        <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300" id="add-modal-content">
-            <div class="flex justify-between items-center mb-5">
-                <h2 class="text-xl font-bold text-gray-800">Catat Transaksi Aktual</h2>
-                <button onclick="toggleAddModal()" class="text-gray-400 hover:text-gray-600 p-2"><i class="fas fa-times text-xl"></i></button>
-            </div>
-            
-            <!-- Type Selector -->
-            <div class="flex bg-gray-100 rounded-lg p-1 mb-5">
-                <button id="btn-type-expense" onclick="setTxType('expense')" class="flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-red-500 transition-all">Pengeluaran</button>
-                <button id="btn-type-income" onclick="setTxType('income')" class="flex-1 py-2 text-sm font-medium rounded-md text-gray-500 transition-all">Pemasukan</button>
-            </div>
-
-            <form id="tx-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Nominal (Rp)</label>
-                    <input type="number" id="tx-amount" required class="w-full text-2xl font-bold bg-transparent border-b-2 border-gray-200 focus:border-blue-500 outline-none pb-2 text-gray-800" placeholder="0">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
-                        <select id="tx-category" required class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500">
-                            <option value="Makanan">🍔 Makanan</option>
-                            <option value="Transportasi">🚗 Transportasi</option>
-                            <option value="Belanja">🛍️ Belanja</option>
-                            <option value="Tagihan">📄 Tagihan</option>
-                            <option value="Lainnya">✨ Lainnya</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Sumber Dana</label>
-                        <select id="tx-source" class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500">
-                            <option value="Tunai">💵 Uang Tunai</option>
-                            <option value="BCA">🏦 Bank BCA</option>
-                            <option value="Mandiri">🏦 Bank Mandiri</option>
-                            <option value="Gopay">📱 E-Wallet</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Catatan</label>
-                    <input type="text" id="tx-note" class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500" placeholder="Opsional (Cth: Beli pulsa)">
-                </div>
-
-                <button type="submit" id="btn-submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 mt-4 shadow-lg shadow-blue-500/30 flex justify-center items-center">
-                    Simpan Data Aktual
-                </button>
+    <!-- Modal Input -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-end p-4">
+        <div class="bg-white w-full rounded-t-3xl p-6">
+            <h2 class="text-lg font-bold mb-4">Catat Transaksi</h2>
+            <form id="tx-form" onsubmit="saveData(event)" class="space-y-4">
+                <input type="number" id="amount" placeholder="Nominal (Rp)" required class="w-full border-b-2 p-2 outline-none">
+                <input type="text" id="note" placeholder="Catatan/Kategori" required class="w-full border-b-2 p-2 outline-none">
+                <select id="type" class="w-full p-2 border rounded">
+                    <option value="Pemasukan">Pemasukan (+)</option>
+                    <option value="Pengeluaran">Pengeluaran (-)</option>
+                </select>
+                <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-xl">Simpan</button>
             </form>
         </div>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full text-sm font-medium shadow-xl transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none z-50 flex items-center min-w-max">
-        <i class="fas fa-info-circle text-blue-400 mr-2" id="toast-icon"></i>
-        <span id="toast-msg">Notifikasi</span>
-    </div>
+    <script>
+        // 1. Ambil data dari penyimpanan HP
+        let transactions = JSON.parse(localStorage.getItem('my_wallet_data')) || [];
 
-    <!-- Modul Firebase untuk Database Aktual -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, addDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        function updateUI() {
+            let balance = 0;
+            const list = document.getElementById('transaction-list');
+            list.innerHTML = '';
 
-        // Konfigurasi Database (Tersedia melalui environment)
-        let app, auth, db, appId, currentUser = null;
-        let transactions = []; // Data akan kosong awalnya sampai Anda mengisinya
-        let unsubscribeSnapshot = null;
-        let currentTxType = 'expense';
-        let expenseChartInstance = null;
-
-        const categoryColors = { 'Makanan': '#F59E0B', 'Transportasi': '#3B82F6', 'Belanja': '#EC4899', 'Tagihan': '#EF4444', 'Gaji': '#10B981', 'Bonus': '#FCD34D', 'Investasi': '#60A5FA', 'Lainnya': '#8B5CF6' };
-        const categoryIcons = { 'Makanan': 'fas fa-hamburger text-yellow-500', 'Transportasi': 'fas fa-car text-blue-500', 'Belanja': 'fas fa-shopping-bag text-pink-500', 'Tagihan': 'fas fa-file-invoice-dollar text-red-500', 'Gaji': 'fas fa-wallet text-green-500', 'Bonus': 'fas fa-gift text-yellow-500', 'Investasi': 'fas fa-chart-line text-blue-500', 'Lainnya': 'fas fa-star text-purple-500' };
-
-        // Inisialisasi Firebase
-        try {
-            const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : "{}";
-            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            app = initializeApp(JSON.parse(configStr));
-            auth = getAuth(app);
-            db = getFirestore(app);
-
-            // 1. Autentikasi Pengguna Secara Anonim & Aman
-            const initAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            };
-            initAuth();
-
-            // 2. Pantau Status Login
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    document.getElementById('cloud-status').innerHTML = '<i class="fas fa-cloud text-green-200"></i> Cloud Aktif';
-                    loadTransactionsData(); // Tarik data aktual
-                } else {
-                    currentUser = null;
-                    if(unsubscribeSnapshot) unsubscribeSnapshot();
-                }
-            });
-        } catch (e) {
-            console.error("Gagal terhubung ke Cloud Database", e);
-            document.getElementById('cloud-status').innerHTML = '<i class="fas fa-exclamation-triangle text-red-300"></i> Offline Mode';
-            updateDashboardUI(); // Render kosong
-        }
-
-        // --- Core Logic ---
-
-        // Fungsi Memuat Data dari Cloud Database
-        function loadTransactionsData() {
-            if (!currentUser) return;
-            
-            // Path Database Khusus untuk User ini
-            const txRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions');
-            
-            // Dengarkan perubahan data secara Real-time
-            unsubscribeSnapshot = onSnapshot(txRef, (snapshot) => {
-                // Konversi data cloud ke array lokal
-                transactions = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return { id: doc.id, ...data };
-                });
-                updateDashboardUI(); // Perbarui tampilan
-            }, (error) => {
-                console.error("Gagal memuat data", error);
-                window.showToast('Gagal memuat data dari Cloud', 'error');
-            });
-        }
-
-        // Fungsi Memperbarui Tampilan (UI)
-        function updateDashboardUI() {
-            let totalIncome = 0; let totalExpense = 0; let categoriesTotal = {};
-            
-            transactions.forEach(tx => {
-                if (tx.type === 'income') totalIncome += tx.amount;
-                else { 
-                    totalExpense += tx.amount; 
-                    categoriesTotal[tx.category] = (categoriesTotal[tx.category] || 0) + tx.amount; 
-                }
-            });
-
-            const balance = totalIncome - totalExpense;
-            document.getElementById('total-balance').innerText = formatRupiah(balance);
-            document.getElementById('total-income').innerText = '+ ' + formatRupiah(totalIncome);
-            document.getElementById('total-expense').innerText = '- ' + formatRupiah(totalExpense);
-
-            // Update Target Nabung (Simulasi Dana Darurat 10jt)
-            const goalProgress = (balance / 10000000) * 100;
-            const safeProgress = Math.min(Math.max(goalProgress, 0), 100); // 0 to 100
-            document.getElementById('goal-progress').style.width = safeProgress + '%';
-            document.getElementById('goal-progress').parentElement.previousElementSibling.firstElementChild.innerHTML = `Saldo: ${formatRupiah(balance)} <span class="text-gray-500 font-normal ml-2">(${safeProgress.toFixed(1)}%)</span>`;
-
-            // Kategori
-            const quickCatsDiv = document.getElementById('quick-categories');
-            quickCatsDiv.innerHTML = '';
-            const sortedCats = Object.keys(categoriesTotal).sort((a, b) => categoriesTotal[b] - categoriesTotal[a]).slice(0, 3);
-            
-            if (sortedCats.length === 0) {
-                quickCatsDiv.innerHTML = `<div class="col-span-3 text-center text-xs text-gray-400 py-6 border-2 border-dashed border-gray-200 rounded-xl">Belum ada pengeluaran.<br>Klik tombol + untuk catat data.</div>`;
-            } else {
-                sortedCats.forEach(cat => {
-                    quickCatsDiv.innerHTML += `
-                        <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center mb-1" style="background-color: ${categoryColors[cat]}20"><i class="${categoryIcons[cat] || 'fas fa-box text-gray-500'}"></i></div>
-                            <p class="text-[10px] text-gray-500 font-medium mb-1">${cat}</p>
-                            <p class="text-xs font-bold text-gray-800">${formatRupiah(categoriesTotal[cat]).replace('Rp', '')}</p>
-                        </div>`;
-                });
-            }
-
-            renderTransactionLists(); 
-            updateAnalysisChart(categoriesTotal);
-        }
-
-        function renderTransactionLists() {
-            // Urutkan berdasarkan tanggal terbaru
-            const sorted = [...transactions].sort((a, b) => b.timestamp - a.timestamp);
-            const recentDiv = document.getElementById('recent-transactions');
-            const allDiv = document.getElementById('all-transactions');
-            
-            if(sorted.length === 0) {
-                const emptyMsg = '<p class="text-center text-gray-400 text-sm py-4">Data masih kosong. Silakan input pengeluaran aktual Anda.</p>';
-                recentDiv.innerHTML = emptyMsg;
-                allDiv.innerHTML = emptyMsg;
-                return;
-            }
-
-            recentDiv.innerHTML = ''; allDiv.innerHTML = '';
-
-            const createEl = (tx) => {
-                const isInc = tx.type === 'income';
-                const dateObj = new Date(tx.timestamp);
-                const dateStr = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(dateObj);
-                const el = document.createElement('div');
-                el.className = 'bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center';
-                el.innerHTML = `
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 rounded-full ${isInc ? 'bg-green-100' : 'bg-gray-100'} flex items-center justify-center mr-3 shrink-0">
-                            <i class="${isInc ? 'fas fa-arrow-down text-green-500' : categoryIcons[tx.category] || 'fas fa-receipt text-gray-500'}"></i>
-                        </div>
-                        <div class="overflow-hidden">
-                            <h4 class="text-sm font-bold text-gray-800 truncate">${tx.category}</h4>
-                            <p class="text-[10px] text-gray-400 truncate">${tx.note || tx.source} • ${dateStr}</p>
+            transactions.forEach((tx, index) => {
+                balance += tx.type === 'Pemasukan' ? tx.amount : -tx.amount;
+                list.innerHTML += `
+                    <div class="bg-white p-4 rounded-xl flex justify-between shadow-sm">
+                        <div><p class="font-bold">${tx.note}</p><p class="text-xs text-gray-500">${tx.type}</p></div>
+                        <div class="font-bold ${tx.type === 'Pemasukan' ? 'text-green-500' : 'text-red-500'}">
+                            ${tx.type === 'Pemasukan' ? '+' : '-'} Rp ${tx.amount.toLocaleString()}
                         </div>
                     </div>
-                    <div class="text-right shrink-0 ml-2">
-                        <span class="text-sm font-bold ${isInc ? 'text-green-500' : 'text-gray-800'}">${isInc ? '+' : '-'} ${formatRupiah(tx.amount)}</span>
-                        <p class="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded inline-block mt-1">${tx.source}</p>
-                    </div>`;
-                return el;
-            };
-
-            sorted.slice(0, 5).forEach(tx => recentDiv.appendChild(createEl(tx)));
-            sorted.forEach(tx => allDiv.appendChild(createEl(tx)));
+                `;
+            });
+            document.getElementById('total-balance').innerText = 'Rp ' + balance.toLocaleString();
         }
 
-        function updateAnalysisChart(catTotal) {
-            const labels = Object.keys(catTotal); 
-            const data = Object.values(catTotal);
-            
-            const insightEl = document.getElementById('insight-text');
-            if (data.length > 0) {
-                insightEl.innerHTML = `Pengeluaran terbesar Anda adalah <b>${labels[data.indexOf(Math.max(...data))]}</b>. Coba kurangi pengeluaran ini jika ingin lebih hemat!`;
-            } else {
-                insightEl.innerHTML = `Belum ada data pengeluaran aktual yang bisa dianalisa.`;
-            }
-
-            const ctx = document.getElementById('expenseChart').getContext('2d');
-            if (expenseChartInstance) {
-                expenseChartInstance.data.labels = labels; 
-                expenseChartInstance.data.datasets[0].data = data;
-                expenseChartInstance.data.datasets[0].backgroundColor = labels.map(l => categoryColors[l] || '#cbd5e1');
-                expenseChartInstance.update();
-            } else {
-                expenseChartInstance = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: { 
-                        labels: labels, 
-                        datasets: [{ 
-                            data: data, 
-                            backgroundColor: labels.map(l => categoryColors[l] || '#cbd5e1'), 
-                            borderWidth: 0 
-                        }] 
-                    },
-                    options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { size: 11, family: 'Inter' } } } } }
-                });
-            }
-        }
-
-        // Utilities
-        function formatRupiah(amount) { 
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount); 
-        }
-
-        // --- Expose ke Global (Window) agar bisa dipanggil dari HTML ---
-        
-        window.switchTab = function(tabId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('text-blue-600'); el.classList.add('text-gray-400'); });
-            document.getElementById(`view-${tabId}`).classList.remove('hidden');
-            const idx = { 'home': 0, 'transactions': 1, 'analysis': 2, 'goals': 3 }[tabId];
-            const navs = document.querySelectorAll('.nav-item');
-            navs[idx].classList.remove('text-gray-400'); navs[idx].classList.add('text-blue-600');
-            document.getElementById('main-content').scrollTop = 0;
-        }
-
-        window.toggleAddModal = function() {
-            const modal = document.getElementById('add-modal'); const content = document.getElementById('add-modal-content');
-            if (modal.classList.contains('hidden')) {
-                modal.classList.remove('hidden'); void modal.offsetWidth;
-                modal.classList.remove('opacity-0'); content.classList.remove('translate-y-full');
-            } else {
-                modal.classList.add('opacity-0'); content.classList.add('translate-y-full');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            }
-        }
-
-        window.setTxType = function(type) {
-            currentTxType = type;
-            const bE = document.getElementById('btn-type-expense'); const bI = document.getElementById('btn-type-income');
-            const cat = document.getElementById('tx-category');
-            if (type === 'expense') {
-                bE.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-red-500 transition-all"; bI.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500 transition-all";
-                cat.innerHTML = `<option value="Makanan">🍔 Makanan</option><option value="Transportasi">🚗 Transportasi</option><option value="Belanja">🛍️ Belanja</option><option value="Tagihan">📄 Tagihan</option><option value="Lainnya">✨ Lainnya</option>`;
-            } else {
-                bI.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-green-500 transition-all"; bE.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500 transition-all";
-                cat.innerHTML = `<option value="Gaji">💼 Gaji</option><option value="Bonus">🎁 Bonus</option><option value="Investasi">📈 Investasi</option><option value="Lainnya">✨ Lainnya</option>`;
-            }
-        }
-
-        // Fungsi Simpan ke Cloud Database
-        window.handleFormSubmit = async function(e) {
+        // 2. Simpan data ke HP
+        function saveData(e) {
             e.preventDefault();
-            if (!currentUser) {
-                window.showToast('Menunggu koneksi cloud...', 'error');
-                return;
-            }
-
-            const amountInput = document.getElementById('tx-amount');
-            const btnSubmit = document.getElementById('btn-submit');
-            const amount = parseInt(amountInput.value);
-            
-            if(!amount || amount <= 0) return;
-
-            // Data yang akan disimpan ke database
-            const newData = {
-                type: currentTxType,
-                amount: amount,
-                category: document.getElementById('tx-category').value,
-                source: document.getElementById('tx-source').value,
-                note: document.getElementById('tx-note').value,
-                timestamp: new Date().getTime() // Waktu aktual
+            const tx = {
+                amount: parseInt(document.getElementById('amount').value),
+                note: document.getElementById('note').value,
+                type: document.getElementById('type').value
             };
-
-            // Loading state
-            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
-            btnSubmit.disabled = true;
-
-            try {
-                // Proses simpan ke Firestore
-                const txRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions');
-                await addDoc(txRef, newData);
-                
-                document.getElementById('tx-form').reset(); 
-                window.toggleAddModal(); 
-                window.showToast('Data aktual berhasil disimpan ke Cloud!', 'success');
-            } catch (error) {
-                console.error("Error menambah data", error);
-                window.showToast('Gagal menyimpan data', 'error');
-            } finally {
-                // Kembalikan tombol
-                btnSubmit.innerHTML = 'Simpan Data Aktual';
-                btnSubmit.disabled = false;
-            }
+            transactions.push(tx);
+            localStorage.setItem('my_wallet_data', JSON.stringify(transactions));
+            updateUI();
+            toggleModal();
         }
 
-        window.showToast = function(msg, type = 'success') {
-            const toast = document.getElementById('toast'); 
-            const icon = document.getElementById('toast-icon');
-            
-            document.getElementById('toast-msg').innerText = msg;
-            
-            if(type === 'success') {
-                icon.className = 'fas fa-check-circle text-green-400 mr-2';
-            } else {
-                icon.className = 'fas fa-exclamation-circle text-red-400 mr-2';
-            }
-
-            toast.classList.remove('opacity-0', '-translate-y-4'); toast.classList.add('opacity-100', 'translate-y-0');
-            setTimeout(() => { 
-                toast.classList.remove('opacity-100', 'translate-y-0'); 
-                toast.classList.add('opacity-0', '-translate-y-4'); 
-            }, 3000);
-        }
-
-        window.simulateBankSync = async function() {
-            if (!currentUser) return;
-            window.showToast("Membaca data...");
-            setTimeout(async () => {
-                const dummyBankTx = {
-                    type: 'expense', amount: 45000, category: 'Belanja', source: 'BCA', 
-                    note: 'Auto-sync: Transaksi Bank', timestamp: new Date().getTime()
-                };
-                const txRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions');
-                await addDoc(txRef, dummyBankTx);
-                window.showToast("1 Data Bank berhasil disimpan ke Cloud!");
-            }, 1500);
-        }
-
-        // Jalankan saat load awal
-        window.setTxType('expense');
+        function toggleModal() { document.getElementById('modal').classList.toggle('hidden'); }
+        updateUI();
     </script>
 </body>
 </html>
-
-
-```
