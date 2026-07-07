@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -32,19 +31,17 @@
             <p class="text-xs text-blue-200"><i class="fas fa-check-circle text-green-300"></i> Tersimpan di HP</p>
         </div>
         <div class="flex items-center gap-3">
-            <!-- Filter Bulan/Tahun -->
             <div class="flex gap-1 text-xs">
                 <select id="global-month" onchange="updateDashboard()" class="bg-blue-700 text-white p-1 rounded font-medium outline-none"></select>
                 <select id="global-year" onchange="updateDashboard()" class="bg-blue-700 text-white p-1 rounded font-medium outline-none"></select>
             </div>
-            <!-- Tombol Pengaturan (Pojok Kanan Atas) -->
             <button onclick="toggleSettings()" class="text-blue-100 hover:text-white transition text-lg p-1">
                 <i class="fas fa-cog"></i>
             </button>
         </div>
     </header>
 
-    <!-- Main Content Area (Scrollable by Browser) -->
+    <!-- Main Content Area -->
     <main class="pb-28 relative" id="main-content">
         
         <!-- VIEW: BERANDA -->
@@ -112,12 +109,10 @@
         </div>
     </main>
 
-    <!-- Floating Action Button -->
     <button onclick="toggleAddModal()" class="fixed bottom-20 right-4 bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-xl z-30 hover:bg-blue-700 transition transform active:scale-95">
         <i class="fas fa-plus"></i>
     </button>
 
-    <!-- Bottom Navigation Bar -->
     <nav class="glass border-t border-gray-200 fixed bottom-0 w-full px-6 py-3 pb-safe z-30">
         <ul class="flex justify-between items-center">
             <li class="nav-item active flex flex-col items-center text-blue-600 cursor-pointer w-1/4" onclick="switchTab('home')">
@@ -135,25 +130,40 @@
         </ul>
     </nav>
 
-    <!-- Modal Pengaturan & Backup -->
+    <!-- Modal Pengaturan & Backup Anti-Crash -->
     <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex justify-center items-center p-4 transition-opacity opacity-0">
         <div class="bg-white rounded-3xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300" id="settings-modal-content">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800">Pengaturan & Backup</h2>
+                <h2 class="text-xl font-bold text-gray-800">Backup & Restore</h2>
                 <button onclick="toggleSettings()" class="text-gray-400 hover:text-gray-600 p-2"><i class="fas fa-times text-xl"></i></button>
             </div>
             
-            <div class="space-y-4">
-                <p class="text-xs text-gray-500 mb-2">Simpan data Anda ke dalam bentuk file agar aman dari kehilangan. File ini bisa disimpan ke Google Drive.</p>
+            <div class="space-y-3">
+                <p class="text-xs text-gray-500 mb-2">Amankan data Anda dari kehilangan (Anti-Crash Mode):</p>
                 
-                <button onclick="backupData()" class="w-full bg-blue-100 text-blue-700 font-bold py-3 rounded-xl flex items-center justify-center gap-2">
-                    <i class="fas fa-download"></i> Download File Backup
+                <!-- Share Button -->
+                <button onclick="backupShare()" class="w-full bg-blue-100 text-blue-700 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-share-alt"></i> Bagikan (Kirim ke WA/Drive)
                 </button>
                 
-                <button onclick="document.getElementById('file-upload').click()" class="w-full bg-green-100 text-green-700 font-bold py-3 rounded-xl flex items-center justify-center gap-2">
-                    <i class="fas fa-upload"></i> Restore / Pulihkan Data
+                <!-- Copy Text Button (Paling Aman) -->
+                <button onclick="backupCopy()" class="w-full bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-copy"></i> Salin Kode Backup
+                </button>
+
+                <hr class="my-3 border-gray-200">
+                <p class="text-xs text-gray-500 mb-2">Pulihkan Data (Restore):</p>
+                
+                <!-- File Upload Button -->
+                <button onclick="document.getElementById('file-upload').click()" class="w-full bg-green-100 text-green-700 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-folder-open"></i> Buka File Backup (.json)
                 </button>
                 <input type="file" id="file-upload" class="hidden" accept=".json" onchange="restoreData(event)">
+
+                <!-- Paste Text Button -->
+                <button onclick="restorePaste()" class="w-full bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-paste"></i> Tempel Kode Backup
+                </button>
             </div>
         </div>
     </div>
@@ -527,15 +537,55 @@
             }
         }
 
-        function backupData() {
+        // --- SISTEM BACKUP ANTI-CRASH ---
+        function backupShare() {
             const dataToBackup = { transactions: transactions, accounts: accounts, goals: goals };
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToBackup));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", "DompetKu_Backup_" + formatDate(new Date().toISOString()).replace(/ /g, "_") + ".json");
-            document.body.appendChild(dlAnchorElem);
-            dlAnchorElem.click(); dlAnchorElem.remove();
-            toggleSettings(); showToast("File Backup berhasil diunduh!");
+            const dataStr = JSON.stringify(dataToBackup);
+            
+            try {
+                // Membuka menu share bawaan HP
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Backup DompetKu',
+                        text: dataStr
+                    }).then(() => {
+                        toggleSettings(); showToast("Teks backup berhasil dibagikan!");
+                    }).catch(console.error);
+                } else { backupCopy(); }
+            } catch (err) { backupCopy(); }
+        }
+
+        function backupCopy() {
+            const dataToBackup = { transactions: transactions, accounts: accounts, goals: goals };
+            const dataStr = JSON.stringify(dataToBackup);
+            
+            // Cara paling ampuh untuk copy text di dalam WebView Android
+            const textArea = document.createElement("textarea");
+            textArea.value = dataStr;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            textArea.remove();
+            
+            toggleSettings();
+            alert("✅ BERHASIL!\nKode Backup telah disalin (Copy) ke HP Anda.\n\nSilakan 'Paste' kode tersebut ke pesan WhatsApp Anda sendiri, Google Keep, atau Note sebagai cadangan.");
+        }
+
+        function restorePaste() {
+            const pastedData = prompt("Tempel (Paste) kode backup Anda di kolom bawah ini:");
+            if (!pastedData) return;
+            
+            try {
+                const importedData = JSON.parse(pastedData);
+                if (importedData.transactions && importedData.accounts && importedData.goals) {
+                    transactions = importedData.transactions.map(tx => ({...tx, date: new Date(tx.date)}));
+                    accounts = importedData.accounts; 
+                    goals = importedData.goals;
+                    
+                    saveDataToLocal(); updateDropdowns(); updateDashboard();
+                    toggleSettings(); showToast("✅ Data berhasil dipulihkan!");
+                } else { alert("❌ Kode backup tidak valid!"); }
+            } catch (err) { alert("❌ Format kode salah atau terpotong!"); }
         }
 
         function restoreData(event) {
@@ -549,7 +599,7 @@
                         transactions = importedData.transactions.map(tx => ({...tx, date: new Date(tx.date)}));
                         accounts = importedData.accounts; goals = importedData.goals;
                         saveDataToLocal(); updateDropdowns(); updateDashboard();
-                        toggleSettings(); showToast("Data berhasil dipulihkan!");
+                        toggleSettings(); showToast("✅ Data berhasil dipulihkan!");
                     } else { showToast("File backup tidak valid!"); }
                 } catch (err) { showToast("Gagal membaca file!"); }
             };
