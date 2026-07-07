@@ -30,10 +30,16 @@
             <h1 class="text-xl font-bold">DompetKu</h1>
             <p class="text-xs text-blue-200"><i class="fas fa-check-circle text-green-300"></i> Tersimpan di HP</p>
         </div>
-        <!-- Filter Bulan/Tahun -->
-        <div class="flex gap-1 text-xs">
-            <select id="global-month" onchange="updateDashboard()" class="bg-blue-700 text-white p-1 rounded font-medium outline-none"></select>
-            <select id="global-year" onchange="updateDashboard()" class="bg-blue-700 text-white p-1 rounded font-medium outline-none"></select>
+        <div class="flex items-center gap-3">
+            <!-- Filter Bulan/Tahun -->
+            <div class="flex gap-1 text-xs">
+                <select id="global-month" onchange="updateDashboard()" class="bg-blue-700 text-white p-1 rounded font-medium outline-none"></select>
+                <select id="global-year" onchange="updateDashboard()" class="bg-blue-700 text-white p-1 rounded font-medium outline-none"></select>
+            </div>
+            <!-- Tombol Pengaturan (Pojok Kanan Atas) -->
+            <button onclick="toggleSettings()" class="text-blue-100 hover:text-white transition text-lg p-1">
+                <i class="fas fa-cog"></i>
+            </button>
         </div>
     </header>
 
@@ -110,7 +116,7 @@
         <i class="fas fa-plus"></i>
     </button>
 
-    <!-- Bottom Navigation Bar Berwarna Biru seperti Aslinya -->
+    <!-- Bottom Navigation Bar -->
     <nav class="glass border-t border-gray-200 fixed bottom-0 w-full px-6 py-3 pb-safe z-30">
         <ul class="flex justify-between items-center">
             <li class="nav-item active flex flex-col items-center text-blue-600 cursor-pointer w-1/4" onclick="switchTab('home')">
@@ -128,7 +134,30 @@
         </ul>
     </nav>
 
-    <!-- Modal Transaksi Lengkap -->
+    <!-- Modal Pengaturan & Backup -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex justify-center items-center p-4 transition-opacity opacity-0">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300" id="settings-modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Pengaturan & Backup</h2>
+                <button onclick="toggleSettings()" class="text-gray-400 hover:text-gray-600 p-2"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <div class="space-y-4">
+                <p class="text-xs text-gray-500 mb-2">Simpan data Anda ke dalam bentuk file agar aman dari kehilangan. File ini bisa disimpan ke Google Drive.</p>
+                
+                <button onclick="backupData()" class="w-full bg-blue-100 text-blue-700 font-bold py-3 rounded-xl flex items-center justify-center gap-2">
+                    <i class="fas fa-download"></i> Download File Backup
+                </button>
+                
+                <button onclick="document.getElementById('file-upload').click()" class="w-full bg-green-100 text-green-700 font-bold py-3 rounded-xl flex items-center justify-center gap-2">
+                    <i class="fas fa-upload"></i> Restore / Pulihkan Data
+                </button>
+                <input type="file" id="file-upload" class="hidden" accept=".json" onchange="restoreData(event)">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Transaksi -->
     <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex flex-col justify-end transition-opacity opacity-0">
         <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300" id="add-modal-content">
             <div class="flex justify-between items-center mb-5">
@@ -218,7 +247,6 @@
         let currentTxType = 'expense';
         let expenseChartInstance = null;
 
-        // WARNA DIPERBARUI: Lainnya jadi Oranye, Hutang jadi Ungu
         const categoryColors = { 'Makanan': '#F59E0B', 'Transportasi': '#3B82F6', 'Belanja': '#EC4899', 'Tagihan': '#EF4444', 'Gaji': '#10B981', 'Hutang': '#8B5CF6', 'Lainnya': '#F97316' };
         const categoryIcons = { 'Makanan': 'fas fa-hamburger text-yellow-500', 'Transportasi': 'fas fa-car text-blue-500', 'Belanja': 'fas fa-shopping-bag text-pink-500', 'Tagihan': 'fas fa-file-invoice-dollar text-red-500', 'Gaji': 'fas fa-wallet text-green-500', 'Hutang': 'fas fa-hand-holding-usd text-purple-500', 'Lainnya': 'fas fa-star text-orange-500' };
 
@@ -266,7 +294,7 @@
                     if (tx.type === 'income') totalIncome += tx.amount;
                     else if (tx.type === 'expense' || tx.type === 'debt') { 
                         let catName = tx.type === 'debt' ? 'Hutang' : tx.category;
-                        totalExpense += tx.amount; // Pengeluaran & Hutang memotong saldo aktif
+                        totalExpense += tx.amount; 
                         categoriesTotal[catName] = (categoriesTotal[catName] || 0) + tx.amount; 
                     } else if (tx.type === 'saving') {
                         totalSaving += tx.amount;
@@ -281,7 +309,6 @@
             document.getElementById('total-expense').innerText = '- ' + formatRupiah(totalExpense);
             document.getElementById('total-saved').innerText = formatRupiah(totalSaving);
 
-            // Update Categories UI
             const quickCatsDiv = document.getElementById('quick-categories');
             quickCatsDiv.innerHTML = '';
             const sortedCats = Object.keys(categoriesTotal).sort((a, b) => categoriesTotal[b] - categoriesTotal[a]).slice(0, 3);
@@ -317,8 +344,6 @@
                 let savedAmount = goalSaved[goal.id.toString()] || 0;
                 let percent = (savedAmount / goal.target) * 100;
                 if(percent > 100) percent = 100;
-                
-                // Ubah warna bar target nabung menjadi Teal/Tosca
                 let colorClass = savedAmount >= goal.target ? 'green' : 'teal';
 
                 list.innerHTML += `
@@ -354,7 +379,6 @@
                 const isInc = tx.type === 'income'; const isSav = tx.type === 'saving'; const isDebt = tx.type === 'debt';
                 let sign = isInc ? '+' : '-';
                 
-                // WARNA IKON TABUNGAN DIUBAH MENJADI TEAL/TOSCA
                 let color = isInc ? 'text-green-500' : (isSav ? 'text-teal-500' : (isDebt ? 'text-purple-500' : 'text-gray-800'));
                 let bgIcon = isInc ? 'bg-green-100' : (isSav ? 'bg-teal-100' : (isDebt ? 'bg-purple-100' : 'bg-gray-100'));
                 let icon = isInc ? 'fas fa-arrow-down text-green-500' : (isSav ? 'fas fa-piggy-bank text-teal-500' : (isDebt ? 'fas fa-hand-holding-usd text-purple-500' : (categoryIcons[tx.category] || 'fas fa-receipt text-gray-500')));
@@ -424,8 +448,6 @@
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
             const idx = { 'home': 0, 'transactions': 1, 'analysis': 2, 'goals': 3 }[tabId];
             document.querySelectorAll('.nav-item')[idx].className = "nav-item flex flex-col items-center text-blue-600 cursor-pointer w-1/4";
-            
-            // Scroll layar bawaan browser ke atas
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -439,6 +461,12 @@
             const m = document.getElementById('goal-modal'); const c = document.getElementById('goal-modal-content');
             if (m.classList.contains('hidden')) { m.classList.remove('hidden'); void m.offsetWidth; m.classList.remove('opacity-0'); c.classList.remove('translate-y-full'); }
             else { m.classList.add('opacity-0'); c.classList.add('translate-y-full'); setTimeout(() => m.classList.add('hidden'), 300); }
+        }
+
+        function toggleSettings() {
+            const m = document.getElementById('settings-modal'); const c = document.getElementById('settings-modal-content');
+            if (m.classList.contains('hidden')) { m.classList.remove('hidden'); void m.offsetWidth; m.classList.remove('opacity-0'); c.classList.remove('scale-95'); c.classList.add('scale-100'); }
+            else { m.classList.add('opacity-0'); c.classList.remove('scale-100'); c.classList.add('scale-95'); setTimeout(() => m.classList.add('hidden'), 300); }
         }
 
         function setTxType(type) {
@@ -461,7 +489,6 @@
                 cat.innerHTML = `<option value="Hutang">💜 Pelunasan Hutang</option>`;
                 cat.disabled = true;
             } else if (type === 'saving') {
-                // WARNA TOMBOL NABUNG DI MODAL JADI TEAL/TOSCA
                 bS.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-teal-50 shadow-sm text-teal-600"; catLabel.innerText = "Pilih Target Nabung";
                 cat.innerHTML = goals.length > 0 ? goals.map(g => `<option value="${g.id}">🎯 ${g.name}</option>`).join('') : `<option value="">⚠️ Buat Target Terlebih Dahulu!</option>`;
                 cat.disabled = false;
@@ -497,6 +524,35 @@
                 transactions = transactions.filter(tx => !(tx.type === 'saving' && tx.category == id));
                 saveDataToLocal(); updateDashboard(); showToast('Target dihapus!');
             }
+        }
+
+        function backupData() {
+            const dataToBackup = { transactions: transactions, accounts: accounts, goals: goals };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToBackup));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "DompetKu_Backup_" + formatDate(new Date().toISOString()).replace(/ /g, "_") + ".json");
+            document.body.appendChild(dlAnchorElem);
+            dlAnchorElem.click(); dlAnchorElem.remove();
+            toggleSettings(); showToast("File Backup berhasil diunduh!");
+        }
+
+        function restoreData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (importedData.transactions && importedData.accounts && importedData.goals) {
+                        transactions = importedData.transactions.map(tx => ({...tx, date: new Date(tx.date)}));
+                        accounts = importedData.accounts; goals = importedData.goals;
+                        saveDataToLocal(); updateDropdowns(); updateDashboard();
+                        toggleSettings(); showToast("Data berhasil dipulihkan!");
+                    } else { showToast("File backup tidak valid!"); }
+                } catch (err) { showToast("Gagal membaca file!"); }
+            };
+            reader.readAsText(file);
         }
 
         function showToast(msg) {
