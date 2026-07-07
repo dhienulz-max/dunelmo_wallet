@@ -128,10 +128,11 @@
                 <button onclick="toggleAddModal()" class="text-gray-400 hover:text-gray-600 p-2"><i class="fas fa-times text-xl"></i></button>
             </div>
             
-            <div class="flex bg-gray-100 rounded-lg p-1 mb-5">
-                <button id="btn-type-expense" onclick="setTxType('expense')" class="flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-red-500">Pengeluaran</button>
-                <button id="btn-type-income" onclick="setTxType('income')" class="flex-1 py-2 text-sm font-medium rounded-md text-gray-500">Pemasukan</button>
-                <button id="btn-type-saving" onclick="setTxType('saving')" class="flex-1 py-2 text-sm font-medium rounded-md text-gray-500">Nabung</button>
+            <div class="flex bg-gray-100 rounded-lg p-1 mb-5 gap-1">
+                <button id="btn-type-expense" onclick="setTxType('expense')" class="flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-red-500">Pengeluaran</button>
+                <button id="btn-type-income" onclick="setTxType('income')" class="flex-1 py-2 text-xs font-bold rounded-md text-gray-500">Pemasukan</button>
+                <button id="btn-type-debt" onclick="setTxType('debt')" class="flex-1 py-2 text-xs font-bold rounded-md text-gray-500">Bayar Hutang</button>
+                <button id="btn-type-saving" onclick="setTxType('saving')" class="flex-1 py-2 text-xs font-bold rounded-md text-gray-500">Nabung</button>
             </div>
 
             <form id="tx-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
@@ -146,21 +147,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Sumber Dana</label>
-                        <select id="tx-source" class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500">
-                            <option value="Tunai">💵 Uang Tunai</option>
-                            <option value="BCA">🏦 Bank BCA</option>
-                            <option value="Mandiri">🏦 Bank Mandiri</option>
-                            <option value="BRI">🏦 Bank BRI</option>
-                            <option value="BNI">🏦 Bank BNI</option>
-                            <option value="BSI">🏦 Bank BSI</option>
-                            <option value="Jago">🏦 Bank Jago</option>
-                            <option value="SeaBank">🏦 SeaBank</option>
-                            <option value="Gopay">📱 GoPay</option>
-                            <option value="OVO">📱 OVO</option>
-                            <option value="Dana">📱 DANA</option>
-                            <option value="ShopeePay">📱 ShopeePay</option>
-                            <option value="Crypto">🪙 Aset Kripto</option>
-                        </select>
+                        <select id="tx-source" onchange="checkNewSource(this)" class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"></select>
                     </div>
                 </div>
                 <div>
@@ -203,26 +190,28 @@
     <script>
         const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         
-        // Setup initial filter values based on current date
         const today = new Date();
         let currentFilteredMonth = today.getMonth();
         let currentFilteredYear = today.getFullYear();
 
-        // Populate header dropdown filters
+        // Dropdown Header Filters
         const monthSelect = document.getElementById('global-month');
         const yearSelect = document.getElementById('global-year');
         months.forEach((m, idx) => { monthSelect.innerHTML += `<option value="${idx}" ${idx === currentFilteredMonth ? 'selected' : ''}>${m}</option>`; });
         for(let y = 2025; y <= 2030; y++) { yearSelect.innerHTML += `<option value="${y}" ${y === currentFilteredYear ? 'selected' : ''}>${y}</option>`; }
 
-        // Load Data
-        let transactions = JSON.parse(localStorage.getItem('dompetku_data_v3')) || [];
-        let goals = JSON.parse(localStorage.getItem('dompetku_goals_v2')) || [{ id: 1, name: 'Dana Darurat', target: 10000000 }];
+        // Data Storage
+        let transactions = JSON.parse(localStorage.getItem('dompetku_data_v4')) || [];
+        transactions = transactions.map(tx => ({...tx, date: new Date(tx.date)}));
+        
+        let accounts = JSON.parse(localStorage.getItem('dompetku_accounts_v4')) || ['Tunai', 'BCA', 'Mandiri', 'GoPay'];
+        let goals = JSON.parse(localStorage.getItem('dompetku_goals_v4')) || [{ id: 1, name: 'Dana Darurat', target: 10000000 }];
 
         let currentTxType = 'expense';
         let expenseChartInstance = null;
 
-        const categoryColors = { 'Makanan': '#F59E0B', 'Transportasi': '#3B82F6', 'Belanja': '#EC4899', 'Tagihan': '#EF4444', 'Gaji': '#10B981', 'Lainnya': '#8B5CF6' };
-        const categoryIcons = { 'Makanan': 'fas fa-hamburger text-yellow-500', 'Transportasi': 'fas fa-car text-blue-500', 'Belanja': 'fas fa-shopping-bag text-pink-500', 'Tagihan': 'fas fa-file-invoice-dollar text-red-500', 'Gaji': 'fas fa-wallet text-green-500', 'Lainnya': 'fas fa-star text-purple-500' };
+        const categoryColors = { 'Makanan': '#F59E0B', 'Transportasi': '#3B82F6', 'Belanja': '#EC4899', 'Tagihan': '#EF4444', 'Gaji': '#10B981', 'Hutang': '#8B5CF6', 'Lainnya': '#6B7280' };
+        const categoryIcons = { 'Makanan': 'fas fa-hamburger text-yellow-500', 'Transportasi': 'fas fa-car text-blue-500', 'Belanja': 'fas fa-shopping-bag text-pink-500', 'Tagihan': 'fas fa-file-invoice-dollar text-red-500', 'Gaji': 'fas fa-wallet text-green-500', 'Hutang': 'fas fa-hand-holding-usd text-purple-500', 'Lainnya': 'fas fa-star text-gray-500' };
 
         function formatRupiah(amount) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount); }
         function formatDate(dateStr) { 
@@ -231,8 +220,29 @@
         }
 
         function saveDataToLocal() {
-            localStorage.setItem('dompetku_data_v3', JSON.stringify(transactions));
-            localStorage.setItem('dompetku_goals_v2', JSON.stringify(goals));
+            localStorage.setItem('dompetku_data_v4', JSON.stringify(transactions));
+            localStorage.setItem('dompetku_accounts_v4', JSON.stringify(accounts));
+            localStorage.setItem('dompetku_goals_v4', JSON.stringify(goals));
+        }
+
+        function updateDropdowns() {
+            const srcSelect = document.getElementById('tx-source');
+            srcSelect.innerHTML = accounts.map(a => `<option value="${a}">${a}</option>`).join('');
+            srcSelect.innerHTML += `<option value="NEW_ACC" class="text-blue-600 font-bold">+ Tambah Bank Baru...</option>`;
+        }
+
+        function checkNewSource(select) {
+            if (select.value === 'NEW_ACC') {
+                const newAcc = prompt("Masukkan Nama Bank / E-Wallet baru:");
+                if (newAcc && !accounts.includes(newAcc)) {
+                    accounts.push(newAcc);
+                    saveDataToLocal();
+                    updateDropdowns();
+                    select.value = newAcc;
+                } else {
+                    select.value = accounts[0];
+                }
+            }
         }
 
         function updateDashboard() {
@@ -241,14 +251,16 @@
 
             let totalIncome = 0; let totalExpense = 0; let totalSaving = 0; let categoriesTotal = {};
             
-            // Filter transactions matching the selected month and year
             transactions.forEach(tx => {
                 const txDate = new Date(tx.date);
                 if (txDate.getMonth() === currentFilteredMonth && txDate.getFullYear() === currentFilteredYear) {
                     if (tx.type === 'income') totalIncome += tx.amount;
-                    else if (tx.type === 'expense') { 
-                        totalExpense += tx.amount; 
-                        categoriesTotal[tx.category] = (categoriesTotal[tx.category] || 0) + tx.amount; 
+                    else if (tx.type === 'expense' || tx.type === 'debt') { 
+                        let catName = tx.type === 'debt' ? 'Hutang' : tx.category;
+                        if (tx.type === 'expense') totalExpense += tx.amount;
+                        else totalExpense += tx.amount; // Bayar hutang memotong saldo sama seperti pengeluaran
+                        
+                        categoriesTotal[catName] = (categoriesTotal[catName] || 0) + tx.amount; 
                     } else if (tx.type === 'saving') {
                         totalSaving += tx.amount;
                     }
@@ -267,7 +279,7 @@
             quickCatsDiv.innerHTML = '';
             const sortedCats = Object.keys(categoriesTotal).sort((a, b) => categoriesTotal[b] - categoriesTotal[a]).slice(0, 3);
             
-            if (sortedCats.length === 0) quickCatsDiv.innerHTML = `<div class="col-span-3 text-center text-xs text-gray-400 py-4">Tidak ada pengeluaran di periode ini.</div>`;
+            if (sortedCats.length === 0) quickCatsDiv.innerHTML = `<div class="col-span-3 text-center text-xs text-gray-400 py-4">Tidak ada aktivitas pengeluaran.</div>`;
             else sortedCats.forEach(cat => {
                 quickCatsDiv.innerHTML += `
                     <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
@@ -283,11 +295,10 @@
         }
 
         function renderGoals() {
-            const list = document.getElementById('view-goals').querySelector('#goals-list');
+            const list = document.getElementById('goals-list');
             list.innerHTML = '';
             
             let goalSaved = {};
-            // Tabungan dihitung akumulatif (semua periode waktu)
             transactions.forEach(tx => { if (tx.type === 'saving') goalSaved[tx.category] = (goalSaved[tx.category] || 0) + tx.amount; });
 
             if(goals.length === 0) {
@@ -303,7 +314,7 @@
 
                 list.innerHTML += `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
-                    <button onclick="deleteGoal(${goal.id})" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                    <button onclick="deleteGoal(${goal.id})" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition"><i class="fas fa-trash-alt"></i></button>
                     <div class="flex justify-between items-start mb-2">
                         <div class="pr-6"><h3 class="font-bold text-gray-800">${goal.name}</h3><p class="text-xs text-gray-500">Target: ${formatRupiah(goal.target)}</p></div>
                     </div>
@@ -319,7 +330,6 @@
         }
 
         function renderTransactionLists() {
-            // Urutkan riwayat transaksi bulanan saat ini
             const filteredTx = transactions.filter(tx => {
                 const d = new Date(tx.date);
                 return d.getMonth() === currentFilteredMonth && d.getFullYear() === currentFilteredYear;
@@ -332,16 +342,18 @@
             allDiv.innerHTML = filteredTx.length === 0 ? '<p class="text-center text-gray-400 text-sm py-4">Belum ada transaksi di bulan ini.</p>' : '';
 
             const createEl = (tx) => {
-                const isInc = tx.type === 'income'; const isSav = tx.type === 'saving';
+                const isInc = tx.type === 'income'; const isSav = tx.type === 'saving'; const isDebt = tx.type === 'debt';
                 let sign = isInc ? '+' : '-';
-                let color = isInc ? 'text-green-500' : (isSav ? 'text-blue-500' : 'text-gray-800');
-                let bgIcon = isInc ? 'bg-green-100' : (isSav ? 'bg-blue-100' : 'bg-gray-100');
-                let icon = isInc ? 'fas fa-arrow-down text-green-500' : (isSav ? 'fas fa-piggy-bank text-blue-500' : (categoryIcons[tx.category] || 'fas fa-receipt text-gray-500'));
+                let color = isInc ? 'text-green-500' : (isSav ? 'text-blue-500' : (isDebt ? 'text-purple-500' : 'text-gray-800'));
+                let bgIcon = isInc ? 'bg-green-100' : (isSav ? 'bg-blue-100' : (isDebt ? 'bg-purple-100' : 'bg-gray-100'));
+                let icon = isInc ? 'fas fa-arrow-down text-green-500' : (isSav ? 'fas fa-piggy-bank text-blue-500' : (isDebt ? 'fas fa-hand-holding-usd text-purple-500' : (categoryIcons[tx.category] || 'fas fa-receipt text-gray-500')));
 
                 let displayCategory = tx.category;
                 if (isSav) {
                     const goal = goals.find(g => g.id.toString() === tx.category.toString());
                     displayCategory = goal ? `Nabung: ${goal.name}` : 'Target Terhapus';
+                } else if (isDebt) {
+                    displayCategory = 'Bayar Hutang';
                 }
 
                 const el = document.createElement('div');
@@ -372,7 +384,7 @@
             const labels = Object.keys(catTotal); const data = Object.values(catTotal);
             const insightEl = document.getElementById('insight-text');
             if (data.length > 0) insightEl.innerHTML = `Pengeluaran terbesar di periode ini adalah <b>${labels[data.indexOf(Math.max(...data))]}</b>.`;
-            else insightEl.innerHTML = `Belum ada data pengeluaran untuk dianalisa pada bulan ini.`;
+            else insightEl.innerHTML = `Belum ada data analisis pengeluaran bulan ini.`;
 
             const ctx = document.getElementById('expenseChart').getContext('2d');
             if (expenseChartInstance) {
@@ -391,7 +403,7 @@
         function deleteTransaction(id) {
             if(confirm("Hapus transaksi ini secara permanen?")) {
                 transactions = transactions.filter(tx => tx.id !== id);
-                saveDataToLocal(); updateDashboard(); showToast('Transaksi berhasil dihapus!');
+                saveDataToLocal(); updateDashboard(); showToast('Transaksi dihapus!');
             }
         }
 
@@ -418,19 +430,26 @@
 
         function setTxType(type) {
             currentTxType = type;
-            const bE = document.getElementById('btn-type-expense'); const bI = document.getElementById('btn-type-income'); const bS = document.getElementById('btn-type-saving');
+            const bE = document.getElementById('btn-type-expense'); const bI = document.getElementById('btn-type-income'); const bS = document.getElementById('btn-type-saving'); const bD = document.getElementById('btn-type-debt');
             const catLabel = document.getElementById('label-category'); const cat = document.getElementById('tx-category');
-            bE.className = bI.className = bS.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500";
+            bE.className = bI.className = bS.className = bD.className = "flex-1 py-2 text-xs font-bold rounded-md text-gray-500 bg-transparent";
 
             if (type === 'expense') {
-                bE.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-red-500"; catLabel.innerText = "Kategori";
+                bE.className = "flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-red-500"; catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Makanan">🍔 Makanan</option><option value="Transportasi">🚗 Transportasi</option><option value="Belanja">🛍️ Belanja</option><option value="Tagihan">📄 Tagihan</option><option value="Lainnya">✨ Lainnya</option>`;
+                cat.disabled = false;
             } else if (type === 'income') {
-                bI.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-green-500"; catLabel.innerText = "Kategori";
+                bI.className = "flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-green-500"; catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Gaji">💼 Gaji</option><option value="Bonus">🎁 Bonus</option><option value="Investasi">📈 Investasi</option><option value="Lainnya">✨ Lainnya</option>`;
+                cat.disabled = false;
+            } else if (type === 'debt') {
+                bD.className = "flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-purple-600"; catLabel.innerText = "Kategori Otomatis";
+                cat.innerHTML = `<option value="Hutang">💜 Pelunasan Hutang</option>`;
+                cat.disabled = true;
             } else if (type === 'saving') {
-                bS.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-blue-500"; catLabel.innerText = "Pilih Target Nabung";
+                bS.className = "flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-blue-500"; catLabel.innerText = "Pilih Target Nabung";
                 cat.innerHTML = goals.length > 0 ? goals.map(g => `<option value="${g.id}">🎯 ${g.name}</option>`).join('') : `<option value="">⚠️ Buat Target Terlebih Dahulu!</option>`;
+                cat.disabled = false;
             }
         }
 
@@ -443,7 +462,7 @@
             transactions.push({ 
                 id: Date.now(), type: currentTxType, amount: amount, category: category, 
                 source: document.getElementById('tx-source').value, note: document.getElementById('tx-note').value, 
-                date: new Date().toISOString() // Simpan waktu rill saat diklik
+                date: new Date().toISOString()
             });
             
             saveDataToLocal(); updateDashboard(); document.getElementById('tx-form').reset(); toggleAddModal(); showToast('Tersimpan di HP!');
@@ -454,11 +473,11 @@
             const name = document.getElementById('goal-name').value; const amount = parseInt(document.getElementById('goal-amount').value);
             if(!amount || amount <= 0 || !name) return;
             goals.push({ id: Date.now(), name: name, target: amount });
-            saveDataToLocal(); updateDashboard(); document.getElementById('goal-form').reset(); toggleGoalModal(); showToast('Target baru ditambahkan!');
+            saveDataToLocal(); updateDashboard(); document.getElementById('goal-form').reset(); toggleGoalModal(); showToast('Target ditambahkan!');
         }
 
         function deleteGoal(id) {
-            if(confirm("Hapus target ini? Riwayat tabungan terkait target ini juga akan ikut terhapus.")) {
+            if(confirm("Hapus target nabung ini? Riwayat tabungan terkait target ini juga akan terhapus.")) {
                 goals = goals.filter(g => g.id !== id);
                 transactions = transactions.filter(tx => !(tx.type === 'saving' && tx.category == id));
                 saveDataToLocal(); updateDashboard(); showToast('Target dihapus!');
@@ -471,7 +490,7 @@
             setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', '-translate-y-4'); }, 3000);
         }
 
-        window.onload = () => { updateDashboard(); setTxType('expense'); };
+        window.onload = () => { updateDropdowns(); updateDashboard(); setTxType('expense'); };
     </script>
 </body>
 </html>
