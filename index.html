@@ -15,30 +15,32 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; overscroll-behavior-y: none; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); }
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .glass { background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(10px); }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-gray-800 h-screen flex flex-col overflow-hidden">
+<body class="text-gray-800 bg-gray-100 antialiased">
 
-    <header class="bg-blue-600 text-white p-4 pt-6 shadow-md z-10 flex justify-between items-center">
+    <!-- Header (Sticky) -->
+    <header class="sticky top-0 z-40 bg-blue-600 text-white p-4 pt-6 shadow-md flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold">DompetKu</h1>
             <p class="text-xs text-blue-200"><i class="fas fa-check-circle text-green-300"></i> Tersimpan di HP</p>
         </div>
+        <!-- Filter Bulan/Tahun -->
         <div class="flex gap-1 text-xs">
             <select id="global-month" onchange="updateDashboard()" class="bg-blue-700 text-white p-1 rounded font-medium outline-none"></select>
             <select id="global-year" onchange="updateDashboard()" class="bg-blue-700 text-white p-1 rounded font-medium outline-none"></select>
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto hide-scrollbar pb-24 relative" id="main-content">
+    <!-- Main Content Area (Scrollable by Browser) -->
+    <main class="pb-28 relative" id="main-content">
         
+        <!-- VIEW: BERANDA -->
         <div id="view-home" class="view-section fade-in p-4 space-y-6">
             <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-5 text-white shadow-lg">
                 <p class="text-sm text-blue-100 mb-1">Saldo Uang Aktif (Bulan Ini)</p>
@@ -73,11 +75,13 @@
             </div>
         </div>
 
+        <!-- VIEW: TRANSAKSI -->
         <div id="view-transactions" class="view-section hidden fade-in p-4 space-y-4">
             <h2 class="font-bold text-xl text-gray-800">Riwayat Transaksi</h2>
             <div class="space-y-3" id="all-transactions"></div>
         </div>
 
+        <!-- VIEW: ANALISA -->
         <div id="view-analysis" class="view-section hidden fade-in p-4 space-y-6">
             <h2 class="font-bold text-xl text-gray-800">Analisa Pengeluaran</h2>
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-center">
@@ -91,6 +95,7 @@
             </div>
         </div>
 
+        <!-- VIEW: TARGET NABUNG -->
         <div id="view-goals" class="view-section hidden fade-in p-4 space-y-4">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="font-bold text-xl text-gray-800">Target Nabung</h2>
@@ -100,11 +105,13 @@
         </div>
     </main>
 
-    <button onclick="toggleAddModal()" class="absolute bottom-20 right-4 bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-xl z-20 hover:bg-blue-700 transition transform active:scale-95">
+    <!-- Floating Action Button -->
+    <button onclick="toggleAddModal()" class="fixed bottom-20 right-4 bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-xl z-30 hover:bg-blue-700 transition transform active:scale-95">
         <i class="fas fa-plus"></i>
     </button>
 
-    <nav class="glass border-t border-gray-200 absolute bottom-0 w-full px-6 py-3 pb-safe z-10">
+    <!-- Bottom Navigation Bar Berwarna Biru seperti Aslinya -->
+    <nav class="glass border-t border-gray-200 fixed bottom-0 w-full px-6 py-3 pb-safe z-30">
         <ul class="flex justify-between items-center">
             <li class="nav-item active flex flex-col items-center text-blue-600 cursor-pointer w-1/4" onclick="switchTab('home')">
                 <i class="fas fa-home text-xl mb-1"></i><span class="text-[10px] font-medium">Beranda</span>
@@ -121,6 +128,7 @@
         </ul>
     </nav>
 
+    <!-- Modal Transaksi Lengkap -->
     <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex flex-col justify-end transition-opacity opacity-0">
         <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300" id="add-modal-content">
             <div class="flex justify-between items-center mb-5">
@@ -129,10 +137,10 @@
             </div>
             
             <div class="flex bg-gray-100 rounded-lg p-1 mb-5 gap-1">
-                <button id="btn-type-expense" onclick="setTxType('expense')" class="flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-red-500">Pengeluaran</button>
-                <button id="btn-type-income" onclick="setTxType('income')" class="flex-1 py-2 text-xs font-bold rounded-md text-gray-500">Pemasukan</button>
-                <button id="btn-type-debt" onclick="setTxType('debt')" class="flex-1 py-2 text-xs font-bold rounded-md text-gray-500">Bayar Hutang</button>
-                <button id="btn-type-saving" onclick="setTxType('saving')" class="flex-1 py-2 text-xs font-bold rounded-md text-gray-500">Nabung</button>
+                <button id="btn-type-expense" onclick="setTxType('expense')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-red-500">Pengeluaran</button>
+                <button id="btn-type-income" onclick="setTxType('income')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500">Pemasukan</button>
+                <button id="btn-type-debt" onclick="setTxType('debt')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500">Bayar Hutang</button>
+                <button id="btn-type-saving" onclick="setTxType('saving')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500">Nabung</button>
             </div>
 
             <form id="tx-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
@@ -161,6 +169,7 @@
         </div>
     </div>
 
+    <!-- Modal Target Nabung -->
     <div id="goal-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex flex-col justify-end transition-opacity opacity-0">
         <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300" id="goal-modal-content">
             <div class="flex justify-between items-center mb-5">
@@ -183,6 +192,7 @@
         </div>
     </div>
 
+    <!-- Notification Toast -->
     <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none z-50 flex items-center">
         <i class="fas fa-check-circle text-green-400 mr-2"></i><span id="toast-msg">Notifikasi</span>
     </div>
@@ -194,13 +204,11 @@
         let currentFilteredMonth = today.getMonth();
         let currentFilteredYear = today.getFullYear();
 
-        // Dropdown Header Filters
         const monthSelect = document.getElementById('global-month');
         const yearSelect = document.getElementById('global-year');
         months.forEach((m, idx) => { monthSelect.innerHTML += `<option value="${idx}" ${idx === currentFilteredMonth ? 'selected' : ''}>${m}</option>`; });
         for(let y = 2025; y <= 2030; y++) { yearSelect.innerHTML += `<option value="${y}" ${y === currentFilteredYear ? 'selected' : ''}>${y}</option>`; }
 
-        // Data Storage
         let transactions = JSON.parse(localStorage.getItem('dompetku_data_v4')) || [];
         transactions = transactions.map(tx => ({...tx, date: new Date(tx.date)}));
         
@@ -210,8 +218,9 @@
         let currentTxType = 'expense';
         let expenseChartInstance = null;
 
-        const categoryColors = { 'Makanan': '#F59E0B', 'Transportasi': '#3B82F6', 'Belanja': '#EC4899', 'Tagihan': '#EF4444', 'Gaji': '#10B981', 'Hutang': '#8B5CF6', 'Lainnya': '#6B7280' };
-        const categoryIcons = { 'Makanan': 'fas fa-hamburger text-yellow-500', 'Transportasi': 'fas fa-car text-blue-500', 'Belanja': 'fas fa-shopping-bag text-pink-500', 'Tagihan': 'fas fa-file-invoice-dollar text-red-500', 'Gaji': 'fas fa-wallet text-green-500', 'Hutang': 'fas fa-hand-holding-usd text-purple-500', 'Lainnya': 'fas fa-star text-gray-500' };
+        // WARNA DIPERBARUI: Lainnya jadi Oranye, Hutang jadi Ungu
+        const categoryColors = { 'Makanan': '#F59E0B', 'Transportasi': '#3B82F6', 'Belanja': '#EC4899', 'Tagihan': '#EF4444', 'Gaji': '#10B981', 'Hutang': '#8B5CF6', 'Lainnya': '#F97316' };
+        const categoryIcons = { 'Makanan': 'fas fa-hamburger text-yellow-500', 'Transportasi': 'fas fa-car text-blue-500', 'Belanja': 'fas fa-shopping-bag text-pink-500', 'Tagihan': 'fas fa-file-invoice-dollar text-red-500', 'Gaji': 'fas fa-wallet text-green-500', 'Hutang': 'fas fa-hand-holding-usd text-purple-500', 'Lainnya': 'fas fa-star text-orange-500' };
 
         function formatRupiah(amount) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount); }
         function formatDate(dateStr) { 
@@ -257,9 +266,7 @@
                     if (tx.type === 'income') totalIncome += tx.amount;
                     else if (tx.type === 'expense' || tx.type === 'debt') { 
                         let catName = tx.type === 'debt' ? 'Hutang' : tx.category;
-                        if (tx.type === 'expense') totalExpense += tx.amount;
-                        else totalExpense += tx.amount; // Bayar hutang memotong saldo sama seperti pengeluaran
-                        
+                        totalExpense += tx.amount; // Pengeluaran & Hutang memotong saldo aktif
                         categoriesTotal[catName] = (categoriesTotal[catName] || 0) + tx.amount; 
                     } else if (tx.type === 'saving') {
                         totalSaving += tx.amount;
@@ -310,7 +317,9 @@
                 let savedAmount = goalSaved[goal.id.toString()] || 0;
                 let percent = (savedAmount / goal.target) * 100;
                 if(percent > 100) percent = 100;
-                let colorClass = savedAmount >= goal.target ? 'green' : 'blue';
+                
+                // Ubah warna bar target nabung menjadi Teal/Tosca
+                let colorClass = savedAmount >= goal.target ? 'green' : 'teal';
 
                 list.innerHTML += `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
@@ -344,9 +353,11 @@
             const createEl = (tx) => {
                 const isInc = tx.type === 'income'; const isSav = tx.type === 'saving'; const isDebt = tx.type === 'debt';
                 let sign = isInc ? '+' : '-';
-                let color = isInc ? 'text-green-500' : (isSav ? 'text-blue-500' : (isDebt ? 'text-purple-500' : 'text-gray-800'));
-                let bgIcon = isInc ? 'bg-green-100' : (isSav ? 'bg-blue-100' : (isDebt ? 'bg-purple-100' : 'bg-gray-100'));
-                let icon = isInc ? 'fas fa-arrow-down text-green-500' : (isSav ? 'fas fa-piggy-bank text-blue-500' : (isDebt ? 'fas fa-hand-holding-usd text-purple-500' : (categoryIcons[tx.category] || 'fas fa-receipt text-gray-500')));
+                
+                // WARNA IKON TABUNGAN DIUBAH MENJADI TEAL/TOSCA
+                let color = isInc ? 'text-green-500' : (isSav ? 'text-teal-500' : (isDebt ? 'text-purple-500' : 'text-gray-800'));
+                let bgIcon = isInc ? 'bg-green-100' : (isSav ? 'bg-teal-100' : (isDebt ? 'bg-purple-100' : 'bg-gray-100'));
+                let icon = isInc ? 'fas fa-arrow-down text-green-500' : (isSav ? 'fas fa-piggy-bank text-teal-500' : (isDebt ? 'fas fa-hand-holding-usd text-purple-500' : (categoryIcons[tx.category] || 'fas fa-receipt text-gray-500')));
 
                 let displayCategory = tx.category;
                 if (isSav) {
@@ -413,7 +424,9 @@
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
             const idx = { 'home': 0, 'transactions': 1, 'analysis': 2, 'goals': 3 }[tabId];
             document.querySelectorAll('.nav-item')[idx].className = "nav-item flex flex-col items-center text-blue-600 cursor-pointer w-1/4";
-            document.getElementById('main-content').scrollTop = 0;
+            
+            // Scroll layar bawaan browser ke atas
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function toggleAddModal() {
@@ -432,22 +445,24 @@
             currentTxType = type;
             const bE = document.getElementById('btn-type-expense'); const bI = document.getElementById('btn-type-income'); const bS = document.getElementById('btn-type-saving'); const bD = document.getElementById('btn-type-debt');
             const catLabel = document.getElementById('label-category'); const cat = document.getElementById('tx-category');
-            bE.className = bI.className = bS.className = bD.className = "flex-1 py-2 text-xs font-bold rounded-md text-gray-500 bg-transparent";
+            
+            bE.className = bI.className = bS.className = bD.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500 bg-transparent";
 
             if (type === 'expense') {
-                bE.className = "flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-red-500"; catLabel.innerText = "Kategori";
+                bE.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-red-500"; catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Makanan">🍔 Makanan</option><option value="Transportasi">🚗 Transportasi</option><option value="Belanja">🛍️ Belanja</option><option value="Tagihan">📄 Tagihan</option><option value="Lainnya">✨ Lainnya</option>`;
                 cat.disabled = false;
             } else if (type === 'income') {
-                bI.className = "flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-green-500"; catLabel.innerText = "Kategori";
+                bI.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-green-500"; catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Gaji">💼 Gaji</option><option value="Bonus">🎁 Bonus</option><option value="Investasi">📈 Investasi</option><option value="Lainnya">✨ Lainnya</option>`;
                 cat.disabled = false;
             } else if (type === 'debt') {
-                bD.className = "flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-purple-600"; catLabel.innerText = "Kategori Otomatis";
+                bD.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-purple-600"; catLabel.innerText = "Kategori Otomatis";
                 cat.innerHTML = `<option value="Hutang">💜 Pelunasan Hutang</option>`;
                 cat.disabled = true;
             } else if (type === 'saving') {
-                bS.className = "flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-blue-500"; catLabel.innerText = "Pilih Target Nabung";
+                // WARNA TOMBOL NABUNG DI MODAL JADI TEAL/TOSCA
+                bS.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-teal-50 shadow-sm text-teal-600"; catLabel.innerText = "Pilih Target Nabung";
                 cat.innerHTML = goals.length > 0 ? goals.map(g => `<option value="${g.id}">🎯 ${g.name}</option>`).join('') : `<option value="">⚠️ Buat Target Terlebih Dahulu!</option>`;
                 cat.disabled = false;
             }
@@ -494,3 +509,6 @@
     </script>
 </body>
 </html>
+
+
+```
