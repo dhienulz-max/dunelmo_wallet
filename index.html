@@ -15,17 +15,25 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        /* Mematikan Auto-Refresh / Pull-to-Refresh Bawaan Android */
+        html, body { 
+            overscroll-behavior: none; 
+            overscroll-behavior-y: none; 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f3f4f6; 
+        }
         .glass { background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(10px); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-gray-800 bg-gray-100 antialiased">
+<body class="text-gray-800 antialiased h-screen flex flex-col overflow-hidden">
 
     <!-- Header (Sticky) -->
-    <header class="sticky top-0 z-40 bg-blue-600 text-white p-4 pt-6 shadow-md flex justify-between items-center">
+    <header class="bg-blue-600 text-white p-4 pt-6 shadow-md z-40 flex justify-between items-center flex-shrink-0">
         <div>
             <h1 class="text-xl font-bold">DompetKu</h1>
             <p class="text-xs text-blue-200"><i class="fas fa-check-circle text-green-300"></i> Tersimpan di HP</p>
@@ -42,7 +50,7 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="pb-28 relative" id="main-content">
+    <main class="flex-1 overflow-y-auto hide-scrollbar pb-28 relative" id="main-content">
         
         <!-- VIEW: BERANDA -->
         <div id="view-home" class="view-section fade-in p-4 space-y-6">
@@ -170,39 +178,48 @@
 
     <!-- Modal Transaksi -->
     <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex flex-col justify-end transition-opacity opacity-0">
-        <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300" id="add-modal-content">
-            <div class="flex justify-between items-center mb-5">
+        <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="add-modal-content">
+            <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold text-gray-800">Catat Transaksi</h2>
                 <button onclick="toggleAddModal()" class="text-gray-400 hover:text-gray-600 p-2"><i class="fas fa-times text-xl"></i></button>
             </div>
             
-            <div class="flex bg-gray-100 rounded-lg p-1 mb-5 gap-1">
-                <button id="btn-type-expense" onclick="setTxType('expense')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-red-500">Pengeluaran</button>
-                <button id="btn-type-income" onclick="setTxType('income')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500">Pemasukan</button>
-                <button id="btn-type-debt" onclick="setTxType('debt')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500">Bayar Hutang</button>
-                <button id="btn-type-saving" onclick="setTxType('saving')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500">Nabung</button>
+            <div class="flex bg-gray-100 rounded-lg p-1 mb-4 gap-1">
+                <button id="btn-type-expense" onclick="setTxType('expense')" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-red-500">Pengeluaran</button>
+                <button id="btn-type-income" onclick="setTxType('income')" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md text-gray-500">Pemasukan</button>
+                <button id="btn-type-debt" onclick="setTxType('debt')" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md text-gray-500">Hutang</button>
+                <button id="btn-type-saving" onclick="setTxType('saving')" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md text-gray-500">Nabung</button>
             </div>
 
             <form id="tx-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Nominal (Rp)</label>
-                    <input type="number" id="tx-amount" required class="w-full text-2xl font-bold bg-transparent border-b-2 border-gray-200 focus:border-blue-500 outline-none pb-2 text-gray-800" placeholder="0">
+                    <input type="number" id="tx-amount" required class="w-full text-2xl font-bold bg-transparent border-b-2 border-gray-200 focus:border-blue-500 outline-none pb-1 text-gray-800" placeholder="0">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                
+                <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label id="label-category" class="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
                         <select id="tx-category" required class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"></select>
                     </div>
                     <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal</label>
+                        <input type="date" id="tx-date" required class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2 text-sm outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Sumber Dana</label>
                         <select id="tx-source" onchange="checkNewSource(this)" class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"></select>
                     </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Catatan</label>
+                        <input type="text" id="tx-note" class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500" placeholder="Opsional">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Catatan</label>
-                    <input type="text" id="tx-note" class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500" placeholder="Opsional">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 mt-4 shadow-lg shadow-blue-500/30">
+                
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 mt-2 shadow-lg shadow-blue-500/30">
                     Simpan Transaksi
                 </button>
             </form>
@@ -459,13 +476,18 @@
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
             const idx = { 'home': 0, 'transactions': 1, 'analysis': 2, 'goals': 3 }[tabId];
             document.querySelectorAll('.nav-item')[idx].className = "nav-item flex flex-col items-center text-blue-600 cursor-pointer w-1/4";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll menggunakan cara standard agar kompatibel dengan overscroll-behavior none
+            document.getElementById('main-content').scrollTop = 0;
         }
 
         function toggleAddModal() {
             const m = document.getElementById('add-modal'); const c = document.getElementById('add-modal-content');
-            if (m.classList.contains('hidden')) { m.classList.remove('hidden'); void m.offsetWidth; m.classList.remove('opacity-0'); c.classList.remove('translate-y-full'); }
-            else { m.classList.add('opacity-0'); c.classList.add('translate-y-full'); setTimeout(() => m.classList.add('hidden'), 300); }
+            if (m.classList.contains('hidden')) { 
+                m.classList.remove('hidden'); void m.offsetWidth; m.classList.remove('opacity-0'); c.classList.remove('translate-y-full'); 
+                document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
+            } else { 
+                m.classList.add('opacity-0'); c.classList.add('translate-y-full'); setTimeout(() => m.classList.add('hidden'), 300); 
+            }
         }
 
         function toggleGoalModal() {
@@ -485,22 +507,22 @@
             const bE = document.getElementById('btn-type-expense'); const bI = document.getElementById('btn-type-income'); const bS = document.getElementById('btn-type-saving'); const bD = document.getElementById('btn-type-debt');
             const catLabel = document.getElementById('label-category'); const cat = document.getElementById('tx-category');
             
-            bE.className = bI.className = bS.className = bD.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500 bg-transparent";
+            bE.className = bI.className = bS.className = bD.className = "flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md text-gray-500 bg-transparent";
 
             if (type === 'expense') {
-                bE.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-red-500"; catLabel.innerText = "Kategori";
+                bE.className = "flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-red-500"; catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Makanan">🍔 Makanan</option><option value="Transportasi">🚗 Transportasi</option><option value="Belanja">🛍️ Belanja</option><option value="Tagihan">📄 Tagihan</option><option value="Lainnya">✨ Lainnya</option>`;
                 cat.disabled = false;
             } else if (type === 'income') {
-                bI.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-green-500"; catLabel.innerText = "Kategori";
+                bI.className = "flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-green-500"; catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Gaji">💼 Gaji</option><option value="Bonus">🎁 Bonus</option><option value="Investasi">📈 Investasi</option><option value="Lainnya">✨ Lainnya</option>`;
                 cat.disabled = false;
             } else if (type === 'debt') {
-                bD.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-purple-600"; catLabel.innerText = "Kategori Otomatis";
+                bD.className = "flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-purple-600"; catLabel.innerText = "Kategori Otomatis";
                 cat.innerHTML = `<option value="Hutang">💜 Pelunasan Hutang</option>`;
                 cat.disabled = true;
             } else if (type === 'saving') {
-                bS.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-teal-50 shadow-sm text-teal-600"; catLabel.innerText = "Pilih Target Nabung";
+                bS.className = "flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md bg-teal-50 shadow-sm text-teal-600"; catLabel.innerText = "Pilih Target Nabung";
                 cat.innerHTML = goals.length > 0 ? goals.map(g => `<option value="${g.id}">🎯 ${g.name}</option>`).join('') : `<option value="">⚠️ Buat Target Terlebih Dahulu!</option>`;
                 cat.disabled = false;
             }
@@ -510,12 +532,18 @@
             e.preventDefault();
             const amount = parseInt(document.getElementById('tx-amount').value);
             const category = document.getElementById('tx-category').value;
-            if(!amount || amount <= 0 || (currentTxType === 'saving' && !category)) return;
+            
+            const dateInput = document.getElementById('tx-date').value; 
+            if(!amount || amount <= 0 || !dateInput || (currentTxType === 'saving' && !category)) return;
+            
+            const selectedDate = new Date(dateInput);
+            const now = new Date();
+            selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
             
             transactions.push({ 
                 id: Date.now(), type: currentTxType, amount: amount, category: category, 
                 source: document.getElementById('tx-source').value, note: document.getElementById('tx-note').value, 
-                date: new Date().toISOString()
+                date: selectedDate.toISOString()
             });
             
             saveDataToLocal(); updateDashboard(); document.getElementById('tx-form').reset(); toggleAddModal(); showToast('Tersimpan di HP!');
@@ -537,18 +565,12 @@
             }
         }
 
-        // --- SISTEM BACKUP ANTI-CRASH ---
         function backupShare() {
             const dataToBackup = { transactions: transactions, accounts: accounts, goals: goals };
             const dataStr = JSON.stringify(dataToBackup);
-            
             try {
-                // Membuka menu share bawaan HP
                 if (navigator.share) {
-                    navigator.share({
-                        title: 'Backup DompetKu',
-                        text: dataStr
-                    }).then(() => {
+                    navigator.share({ title: 'Backup DompetKu', text: dataStr }).then(() => {
                         toggleSettings(); showToast("Teks backup berhasil dibagikan!");
                     }).catch(console.error);
                 } else { backupCopy(); }
@@ -558,15 +580,12 @@
         function backupCopy() {
             const dataToBackup = { transactions: transactions, accounts: accounts, goals: goals };
             const dataStr = JSON.stringify(dataToBackup);
-            
-            // Cara paling ampuh untuk copy text di dalam WebView Android
             const textArea = document.createElement("textarea");
             textArea.value = dataStr;
             document.body.appendChild(textArea);
             textArea.select();
             document.execCommand("copy");
             textArea.remove();
-            
             toggleSettings();
             alert("✅ BERHASIL!\nKode Backup telah disalin (Copy) ke HP Anda.\n\nSilakan 'Paste' kode tersebut ke pesan WhatsApp Anda sendiri, Google Keep, atau Note sebagai cadangan.");
         }
@@ -574,14 +593,12 @@
         function restorePaste() {
             const pastedData = prompt("Tempel (Paste) kode backup Anda di kolom bawah ini:");
             if (!pastedData) return;
-            
             try {
                 const importedData = JSON.parse(pastedData);
                 if (importedData.transactions && importedData.accounts && importedData.goals) {
                     transactions = importedData.transactions.map(tx => ({...tx, date: new Date(tx.date)}));
                     accounts = importedData.accounts; 
                     goals = importedData.goals;
-                    
                     saveDataToLocal(); updateDropdowns(); updateDashboard();
                     toggleSettings(); showToast("✅ Data berhasil dipulihkan!");
                 } else { alert("❌ Kode backup tidak valid!"); }
@@ -618,4 +635,5 @@
 </html>
 
 
-```
+
+
