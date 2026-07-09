@@ -15,25 +15,25 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        /* Mematikan Auto-Refresh / Pull-to-Refresh Bawaan Android */
+        
+        /* Mematikan Auto-Refresh Bawaan Android Secara Total */
         html, body { 
-            overscroll-behavior: none; 
-            overscroll-behavior-y: none; 
+            overscroll-behavior-y: none !important; 
             font-family: 'Inter', sans-serif; 
-            background-color: #f3f4f6; 
+            background-color: #f3f4f6;
+            -webkit-overflow-scrolling: touch;
         }
+        
         .glass { background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(10px); }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-gray-800 antialiased h-screen flex flex-col overflow-hidden">
+<body class="text-gray-800 antialiased relative min-h-screen">
 
-    <!-- Header (Sticky) -->
-    <header class="bg-blue-600 text-white p-4 pt-6 shadow-md z-40 flex justify-between items-center flex-shrink-0">
+    <!-- Header (Fixed di Atas) -->
+    <header class="fixed top-0 w-full z-40 bg-blue-600 text-white p-4 pt-6 shadow-md flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold">DompetKu</h1>
             <p class="text-xs text-blue-200"><i class="fas fa-check-circle text-green-300"></i> Tersimpan di HP</p>
@@ -49,11 +49,11 @@
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto hide-scrollbar pb-28 relative" id="main-content">
+    <!-- Main Content Area (Padding Top biar ga ketutupan Header, Padding Bottom buat Navbar) -->
+    <main class="pt-24 pb-28 px-4 relative" id="main-content">
         
         <!-- VIEW: BERANDA -->
-        <div id="view-home" class="view-section fade-in p-4 space-y-6">
+        <div id="view-home" class="view-section fade-in space-y-6">
             <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-5 text-white shadow-lg">
                 <p class="text-sm text-blue-100 mb-1">Saldo Uang Aktif (Bulan Ini)</p>
                 <h2 class="text-3xl font-bold mb-4" id="total-balance">Rp 0</h2>
@@ -88,13 +88,13 @@
         </div>
 
         <!-- VIEW: TRANSAKSI -->
-        <div id="view-transactions" class="view-section hidden fade-in p-4 space-y-4">
+        <div id="view-transactions" class="view-section hidden fade-in space-y-4">
             <h2 class="font-bold text-xl text-gray-800">Riwayat Transaksi</h2>
             <div class="space-y-3" id="all-transactions"></div>
         </div>
 
         <!-- VIEW: ANALISA -->
-        <div id="view-analysis" class="view-section hidden fade-in p-4 space-y-6">
+        <div id="view-analysis" class="view-section hidden fade-in space-y-6">
             <h2 class="font-bold text-xl text-gray-800">Analisa Pengeluaran</h2>
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-center">
                 <div class="w-full max-w-[280px]">
@@ -108,7 +108,7 @@
         </div>
 
         <!-- VIEW: TARGET NABUNG -->
-        <div id="view-goals" class="view-section hidden fade-in p-4 space-y-4">
+        <div id="view-goals" class="view-section hidden fade-in space-y-4">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="font-bold text-xl text-gray-800">Target Nabung</h2>
                 <button onclick="toggleGoalModal()" class="text-blue-600 bg-blue-100 px-3 py-1 rounded-full text-xs font-bold hover:bg-blue-200 transition"><i class="fas fa-plus"></i> Tambah</button>
@@ -117,10 +117,12 @@
         </div>
     </main>
 
+    <!-- Floating Action Button -->
     <button onclick="toggleAddModal()" class="fixed bottom-20 right-4 bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-xl z-30 hover:bg-blue-700 transition transform active:scale-95">
         <i class="fas fa-plus"></i>
     </button>
 
+    <!-- Bottom Navigation Bar (Fixed di Bawah) -->
     <nav class="glass border-t border-gray-200 fixed bottom-0 w-full px-6 py-3 pb-safe z-30">
         <ul class="flex justify-between items-center">
             <li class="nav-item active flex flex-col items-center text-blue-600 cursor-pointer w-1/4" onclick="switchTab('home')">
@@ -148,13 +150,9 @@
             
             <div class="space-y-3">
                 <p class="text-xs text-gray-500 mb-2">Amankan data Anda dari kehilangan (Anti-Crash Mode):</p>
-                
-                <!-- Share Button -->
                 <button onclick="backupShare()" class="w-full bg-blue-100 text-blue-700 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-share-alt"></i> Bagikan (Kirim ke WA/Drive)
                 </button>
-                
-                <!-- Copy Text Button (Paling Aman) -->
                 <button onclick="backupCopy()" class="w-full bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-copy"></i> Salin Kode Backup
                 </button>
@@ -162,13 +160,11 @@
                 <hr class="my-3 border-gray-200">
                 <p class="text-xs text-gray-500 mb-2">Pulihkan Data (Restore):</p>
                 
-                <!-- File Upload Button -->
                 <button onclick="document.getElementById('file-upload').click()" class="w-full bg-green-100 text-green-700 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-folder-open"></i> Buka File Backup (.json)
                 </button>
                 <input type="file" id="file-upload" class="hidden" accept=".json" onchange="restoreData(event)">
 
-                <!-- Paste Text Button -->
                 <button onclick="restorePaste()" class="w-full bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-paste"></i> Tempel Kode Backup
                 </button>
@@ -185,10 +181,10 @@
             </div>
             
             <div class="flex bg-gray-100 rounded-lg p-1 mb-4 gap-1">
-                <button id="btn-type-expense" onclick="setTxType('expense')" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-red-500">Pengeluaran</button>
-                <button id="btn-type-income" onclick="setTxType('income')" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md text-gray-500">Pemasukan</button>
-                <button id="btn-type-debt" onclick="setTxType('debt')" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md text-gray-500">Hutang</button>
-                <button id="btn-type-saving" onclick="setTxType('saving')" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md text-gray-500">Nabung</button>
+                <button id="btn-type-expense" onclick="setTxType('expense')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-red-500">Pengeluaran</button>
+                <button id="btn-type-income" onclick="setTxType('income')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500">Pemasukan</button>
+                <button id="btn-type-debt" onclick="setTxType('debt')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500">Hutang</button>
+                <button id="btn-type-saving" onclick="setTxType('saving')" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500">Nabung</button>
             </div>
 
             <form id="tx-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
@@ -476,8 +472,7 @@
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
             const idx = { 'home': 0, 'transactions': 1, 'analysis': 2, 'goals': 3 }[tabId];
             document.querySelectorAll('.nav-item')[idx].className = "nav-item flex flex-col items-center text-blue-600 cursor-pointer w-1/4";
-            // Scroll menggunakan cara standard agar kompatibel dengan overscroll-behavior none
-            document.getElementById('main-content').scrollTop = 0;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function toggleAddModal() {
@@ -507,22 +502,22 @@
             const bE = document.getElementById('btn-type-expense'); const bI = document.getElementById('btn-type-income'); const bS = document.getElementById('btn-type-saving'); const bD = document.getElementById('btn-type-debt');
             const catLabel = document.getElementById('label-category'); const cat = document.getElementById('tx-category');
             
-            bE.className = bI.className = bS.className = bD.className = "flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md text-gray-500 bg-transparent";
+            bE.className = bI.className = bS.className = bD.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md text-gray-500 bg-transparent";
 
             if (type === 'expense') {
-                bE.className = "flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-red-500"; catLabel.innerText = "Kategori";
+                bE.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-red-500"; catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Makanan">🍔 Makanan</option><option value="Transportasi">🚗 Transportasi</option><option value="Belanja">🛍️ Belanja</option><option value="Tagihan">📄 Tagihan</option><option value="Lainnya">✨ Lainnya</option>`;
                 cat.disabled = false;
             } else if (type === 'income') {
-                bI.className = "flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-green-500"; catLabel.innerText = "Kategori";
+                bI.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-green-500"; catLabel.innerText = "Kategori";
                 cat.innerHTML = `<option value="Gaji">💼 Gaji</option><option value="Bonus">🎁 Bonus</option><option value="Investasi">📈 Investasi</option><option value="Lainnya">✨ Lainnya</option>`;
                 cat.disabled = false;
             } else if (type === 'debt') {
-                bD.className = "flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-purple-600"; catLabel.innerText = "Kategori Otomatis";
+                bD.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-white shadow-sm text-purple-600"; catLabel.innerText = "Kategori Otomatis";
                 cat.innerHTML = `<option value="Hutang">💜 Pelunasan Hutang</option>`;
                 cat.disabled = true;
             } else if (type === 'saving') {
-                bS.className = "flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-md bg-teal-50 shadow-sm text-teal-600"; catLabel.innerText = "Pilih Target Nabung";
+                bS.className = "flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-md bg-teal-50 shadow-sm text-teal-600"; catLabel.innerText = "Pilih Target Nabung";
                 cat.innerHTML = goals.length > 0 ? goals.map(g => `<option value="${g.id}">🎯 ${g.name}</option>`).join('') : `<option value="">⚠️ Buat Target Terlebih Dahulu!</option>`;
                 cat.disabled = false;
             }
@@ -633,7 +628,6 @@
     </script>
 </body>
 </html>
-
 
 
 
